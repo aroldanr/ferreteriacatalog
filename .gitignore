@@ -1,0 +1,125 @@
+# .gitignore
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# User-specific files
+*.rsuser
+*.rsuser.json
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# User-specific files (Mono Auto Generated)
+mono_crash.*
+
+# Mono Auto Generated
+mono_crash.*
+
+# VS Code directories
+.vscode/
+.vscode/*
+
+# Rider
+.idea/
+.idea/*
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Auto-generated files (backup files)
+*.orig
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Office temp files
+~$*.docx
+~$*.xlsx
+~$*.pptx
+
+# User-specific files
+.vs/
+
+# ASP.NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+
+# ASP.NET Core
+artifacts/
+
+# npm
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment variables
+.env
+.env.*
+
+# Local NuGet folder
+**/packages/*
+
+# R#
+_Resharper
+**/LocalHistory/
+**/UserPreferences/
+
+# Client-side resources
+client/bin/
+client/obj/
+
+# Dotnet tool manifest files
+.dotnet_tools/
+
+# VSCode
+.vscode/
+.vscode/*
+
+# Local History for IDE
+.localhistory/
+
+# Log files
+*.log
+
+# External IDE
+external_tool/Settings
+
+# Publish directory
+[Pp]ublish/
+
+# Sqlite database files
+*.mdf
+*.ldf
+
+# Windows installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Others
+[Tt]emp/
