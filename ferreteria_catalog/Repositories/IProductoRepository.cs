@@ -1,12 +1,13 @@
 ﻿using ferreteria_catalog.Models;
+using ferreteria_catalog.Models.CustomEntities;
 
 namespace ferreteria_catalog.Repositories
 {
     public interface IProductoRepository
     {
-        Task<Producto> GetProductoByIdAsync(long id);
+        Task<ProductoDTO> GetProductoByIdAsync(long id);
         Task<Producto> GetProductoByCodigoAsync(string codigo);
-        Task<IEnumerable<Producto>> GetAllProductosAsync();
+        Task<IEnumerable<ProductoDTO>> GetAllProductosAsync();
         Task AddStockAsync(int id, int cantidad);
     }
 }

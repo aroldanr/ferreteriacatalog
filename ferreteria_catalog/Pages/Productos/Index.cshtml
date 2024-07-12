@@ -24,7 +24,7 @@
         <div class="form-group col-md-2" m-5>
             <button type="submit" class="btn btn-primary">Buscar</button>
         </div>
-    </div>
+    </div> 
 </form>
 
 <div class="row">
@@ -32,16 +32,16 @@
     {
         <div class="col-md-4">
             <div class="card mb-4 shadow-sm">
-                <img src="@item.ImagenUrl" class="card-img-top" alt="@item.Nombre">
+                <img src="@item.ImagenURL" class="card-img-top" alt="@item.Descripcion">
                 <div class="card-body">
-                    <h5 class="card-title">@item.Nombre</h5>
+                    <h5 class="card-title">@item.Descripcion</h5>
                     <p class="card-text">@item.Descripcion</p>
                     @* <p class="card-text"><strong>Precio:</strong> @item.Precio</p> *@
-                    <p class="card-text"><strong>Stock:</strong> @item.Stock</p>
+                    <p class="card-text"><strong>Stock:</strong> @item.Existencia</p>
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="btn-group">
-                            <a class="btn btn-sm btn-outline-secondary" asp-page="./Edit" asp-route-id="@item.Id">Edit</a>
-                            <a class="btn btn-sm btn-outline-danger" asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                            <a class="btn btn-sm btn-outline-secondary" asp-page="./Edit" asp-route-id="@item.ProductoId">Edit</a>
+                            <a class="btn btn-sm btn-outline-danger" asp-page="./Delete" asp-route-id="@item.ProductoId">Delete</a>
                         </div>
                         <small class="text-muted">@item.Marca</small>
                     </div>

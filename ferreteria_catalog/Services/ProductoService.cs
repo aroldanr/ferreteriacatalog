@@ -1,4 +1,5 @@
 ﻿using ferreteria_catalog.Models;
+using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Repositories;
 
 namespace ferreteria_catalog.Services
@@ -12,7 +13,7 @@ namespace ferreteria_catalog.Services
             _productoRepository = productoRepository;
         }
 
-        public async Task<Producto> ObtenerProductoPorIdAsync(long id)
+        public async Task<ProductoDTO> ObtenerProductoPorIdAsync(long id)
         {
             return await _productoRepository.GetProductoByIdAsync(id);
         }
@@ -22,7 +23,7 @@ namespace ferreteria_catalog.Services
             return await _productoRepository.GetProductoByCodigoAsync(codigo);
         }
 
-        public async Task<IEnumerable<Producto>> ObtenerTodosProductosAsync()
+        public async Task<IEnumerable<ProductoDTO>> ObtenerTodosProductosAsync()
         {
             return await _productoRepository.GetAllProductosAsync();
         }
