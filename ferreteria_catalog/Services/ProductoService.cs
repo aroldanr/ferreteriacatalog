@@ -18,9 +18,25 @@ namespace ferreteria_catalog.Services
             return await _productoRepository.GetProductoByIdAsync(id);
         }
 
-        public async Task<Producto> ObtenerProductoPorCodigoAsync(string codigo)
+        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorNombreAsync(string nombre)
         {
-            return await _productoRepository.GetProductoByCodigoAsync(codigo);
+            return await _productoRepository.BuscarProductosPorNombreAsync(nombre);
+        }
+
+        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorCodigoAsync(string codigo)
+        {
+            return await _productoRepository.BuscarProductosPorCodigoAsync(codigo);
+        }
+
+        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoAsync(string termino)
+        {
+            var productosPorNombre = await _productoRepository.BuscarProductosPorNombreAsync(termino);
+            if (productosPorNombre.Any())
+            {
+                return productosPorNombre;
+            }
+
+            return await _productoRepository.BuscarProductosPorCodigoAsync(termino);
         }
 
         public async Task<IEnumerable<ProductoDTO>> ObtenerTodosProductosAsync()
@@ -32,5 +48,26 @@ namespace ferreteria_catalog.Services
         {
             await _productoRepository.AddStockAsync(id, cantidad);
         }
+
+        public async Task<IEnumerable<ProductoDTO>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
+        {
+            return await _productoRepository.ObtenerProductosPaginadosAsync(pagina, cantidadPorPagina);
+        }
+
+        public async Task<int> ObtenerTotalProductosAsync()
+        {
+            return await _productoRepository.ObtenerTotalProductosAsync();
+        }
+
+        public async Task<int> ObtenerTotalProductosPorTerminoAsync(string termino)
+        {
+            return await _productoRepository.ObtenerTotalProductosPorTerminoAsync(termino);
+        }
+
+        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
+        {
+            return await _productoRepository.BuscarProductosPorTerminoYPaginacionAsync(termino, pagina, cantidadPorPagina);
+        }
+
     }
 }

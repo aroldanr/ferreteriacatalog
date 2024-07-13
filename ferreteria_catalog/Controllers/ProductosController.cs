@@ -1,10 +1,12 @@
-﻿using ferreteria_catalog.Services;
+﻿using ferreteria_catalog.Dtos;
+using ferreteria_catalog.Models.CustomEntities;
+using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ferreteria_catalog.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class ProductosController : Controller
     {
         private readonly IProductoService _productoService;
@@ -28,7 +30,7 @@ namespace ferreteria_catalog.Controllers
         [HttpGet("codigo/{codigo}")]
         public async Task<IActionResult> GetProductoByCodigo(string codigo)
         {
-            var producto = await _productoService.ObtenerProductoPorCodigoAsync(codigo);
+            var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
             if (producto == null)
             {
                 return NotFound();
@@ -49,5 +51,46 @@ namespace ferreteria_catalog.Controllers
             await _productoService.AgregarStockAsync(id, cantidad);
             return NoContent();
         }
+
+        [HttpGet("buscar")]
+        public async Task<ActionResult<PaginacionResponse<ProductoDTO>>> BuscarProductos([FromQuery] string termino, int pagina = 1, int cantidadPorPagina = 10)
+        {
+            if (string.IsNullOrEmpty(termino))
+            {
+                return BadRequest("Termino de búsqueda no puede estar vacío.");
+            }
+
+            var productos = await _productoService.BuscarProductosPorTerminoYPaginacionAsync(termino, pagina, cantidadPorPagina);
+            var totalProductos = await _productoService.ObtenerTotalProductosPorTerminoAsync(termino);
+            var totalPaginas = (int)Math.Ceiling((double)totalProductos / cantidadPorPagina);
+
+            var response = new PaginacionResponse<ProductoDTO>
+            {
+                Items = productos,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas
+            };
+
+            return Ok(response);
+        }
+
+        [HttpGet("paginacion")]
+        public async Task<ActionResult<PaginacionResponse<ProductoDTO>>> GetProductosPaginados([FromQuery] int pagina = 1, int cantidadPorPagina = 10)
+        {
+            var productos = await _productoService.ObtenerProductosPaginadosAsync(pagina, cantidadPorPagina);
+            var totalProductos = await _productoService.ObtenerTotalProductosAsync();
+            var totalPaginas = (int)Math.Ceiling((double)totalProductos / cantidadPorPagina);
+
+            var response = new PaginacionResponse<ProductoDTO>
+            {
+                Items = productos,
+                PaginaActual = pagina,
+                TotalPaginas = totalPaginas
+            };
+
+            return Ok(response);
+        }
+
+
     }
 }

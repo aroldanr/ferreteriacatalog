@@ -1,5 +1,6 @@
 ﻿using ferreteria_catalog.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.RegularExpressions;
 
 namespace ferreteria_catalog.Data
