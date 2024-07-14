@@ -5,6 +5,26 @@
     Layout = "_Layout";
 }
 
+<style>
+    .card-custom {
+        height: 350px; /* Ajusta la altura según sea necesario */
+    }
+
+    .card-img-custom {
+        height: 150px; /* Ajusta la altura de la imagen según sea necesario */
+        width: 100%; /* Asegura que la imagen ocupe todo el ancho del contenedor */
+        object-fit: contain; /* Ajusta la imagen dentro del contenedor sin recortarla */
+        object-position: center; /* Centra la imagen dentro del contenedor */
+    }
+
+    .card-body-custom {
+        overflow: hidden; /* Evita que el contenido se desborde */
+        text-overflow: ellipsis; /* Agrega puntos suspensivos al texto desbordado */
+        white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+    }
+
+</style>
+
 <h1>Productos</h1>
 
 <form id="buscarForm" class="m-5">
@@ -21,10 +41,10 @@
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center" id="paginationContainer">
         <li class="page-item">
-            <a class="page-link" href="#" id="prevPage">Previous</a>
+            <a class="page-link" href="#" id="prevPage">Anterior</a>
         </li>
         <li class="page-item">
-            <a class="page-link" href="#" id="nextPage">Next</a>
+            <a class="page-link" href="#" id="nextPage">Siguiente</a>
         </li>
     </ul>
 </nav>
@@ -48,23 +68,19 @@
                         productosContainer.empty();
                         response.items.forEach(function (item) {
                             var productHtml = `
-                                        <div class="col-md-4">
-                                            <div class="card mb-4 shadow-sm">
-                                                <img src="${item.imagenURL}" class="card-img-top" alt="${item.descripcion}">
-                                                <div class="card-body">
-                                                    <h5 class="card-title">${item.descripcion}</h5>
-                                                    <p class="card-text">${item.descripcion}</p>
-                                                    <p class="card-text"><strong>Stock:</strong> ${item.existencia}</p>
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="btn-group">
-                                                            <a class="btn btn-sm btn-outline-secondary" href="./Edit?id=${item.productoId}">Edit</a>
-                                                            <a class="btn btn-sm btn-outline-danger" href="./Delete?id=${item.productoId}">Delete</a>
+                                                            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                                                    <div class="card card-custom shadow-sm">
+                                                                <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}">
+                                                        <div class="card-body card-body-custom">
+                                                            <h5 class="card-title">${item.descripcion}</h5>
+                                                            <p class="card-text">${item.descripcion}</p>
+                                                            <p class="card-text"><strong>Existencia:</strong> ${item.existencia}</p>
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <small class="text-muted">${item.marca}</small>
+                                                            </div>
                                                         </div>
-                                                        <small class="text-muted">${item.marca}</small>
                                                     </div>
-                                                </div>
-                                            </div>
-                                        </div>`;
+                                                </div>`;
                             productosContainer.append(productHtml);
                         });
                         totalPaginas = response.totalPaginas;
@@ -81,18 +97,18 @@
                 paginationContainer.empty();
 
                 paginationContainer.append(`
-                            <li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-                                <a class="page-link" href="#" id="prevPage">Previous</a>
-                            </li>
-                        `);
+                                    <li class="page-item ${pagina === 1 ? 'disabled' : ''}">
+                                        <a class="page-link" href="#" id="prevPage">Anterior</a>
+                                    </li>
+                                `);
 
                 if (pagina > 4) {
                     paginationContainer.append(`
-                                <li class="page-item">
-                                    <a class="page-link" href="#" data-page="1">1</a>
-                                </li>
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                            `);
+                                        <li class="page-item">
+                                            <a class="page-link" href="#" data-page="1">1</a>
+                                        </li>
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    `);
                 }
 
                 var startPage = Math.max(1, pagina - 3);
@@ -100,28 +116,28 @@
 
                 for (var i = startPage; i <= endPage; i++) {
                     paginationContainer.append(`
-                                <li class="page-item ${i === pagina ? 'active' : ''}">
-                                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                                </li>
-                            `);
+                                        <li class="page-item ${i === pagina ? 'active' : ''}">
+                                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                        </li>
+                                    `);
                 }
 
                 if (endPage < totalPaginas - 1) {
                     paginationContainer.append(`
-                                <li class="page-item disabled"><span class="page-link">...</span></li>
-                                <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
-                            `);
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                        <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
+                                    `);
                 } else if (endPage === totalPaginas - 1) {
                     paginationContainer.append(`
-                                <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
-                            `);
+                                        <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
+                                    `);
                 }
 
                 paginationContainer.append(`
-                            <li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
-                                <a class="page-link" href="#" id="nextPage">Next</a>
-                            </li>
-                        `);
+                                    <li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
+                                        <a class="page-link" href="#" id="nextPage">Siguiente</a>
+                                    </li>
+                                `);
             }
 
             $("#paginationContainer").on("click", ".page-link", function (e) {

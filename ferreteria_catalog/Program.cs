@@ -5,6 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 // Add services to the container.
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -46,6 +51,6 @@ app.MapRazorPages();
 app.MapControllers();
 
 // Configurar la página de inicio
-app.MapGet("/", () => Results.Redirect("/Productos"));
+app.MapGet("/", () => Results.Redirect("/Productos/Index"));
 
 app.Run();
