@@ -6,13 +6,17 @@
 
 <h1>Cargar Imágenes por Lote</h1>
 
-<form id="cargarImagenesLoteForm" enctype="multipart/form-data">
-    <div>
+<form id="cargarImagenesLoteForm" class="needs-validation" enctype="multipart/form-data" novalidate>
+    <div class="form-group">
         <label for="imagenes">Seleccionar Imágenes:</label>
-        <input type="file" id="imagenes" name="imagenes" multiple />
-        <button type="button" id="subirImagenes">Subir</button>
+        <input type="file" class="form-control-file" id="imagenes" name="imagenes" multiple required>
+        <div class="invalid-feedback">
+            Por favor, seleccione al menos una imagen.
+        </div>
     </div>
+    <button class="btn btn-primary" type="button" id="subirImagenes">Subir</button>
 </form>
+
 
 @section Scripts {
     <script>

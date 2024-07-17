@@ -22,20 +22,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Remove="Pages\Productos\CargarImagen.cshtml" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <None Remove="Pages\Productos\CargarImagenesLote.cshtml" />
 	  <None Remove="Pages\Productos\ProductoDetalles.cshtml" />
+	  <None Remove="Pages\Productos\SubirImagen.cshtml" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <UpToDateCheckInput Remove="Pages\Productos\ProductoDetalles.cshtml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <UpToDateCheckInput Remove="Pages\Productos\CargarImagen.cshtml" />
 	</ItemGroup>
 
 </Project>

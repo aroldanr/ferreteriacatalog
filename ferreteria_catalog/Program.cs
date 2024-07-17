@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages(options =>
 {
     ///options.Conventions.AddPageRoute("/Productos/ProductoDetalles", "/Productos/ProductoDetalles/{id}");
-    //options.Conventions.AddPageRoute("/Productos/CargarImagen", "Productos/CargarImagen");
+    options.Conventions.AddPageRoute("/Productos/SubirImagen", "Productos/SubirImagen");
     options.Conventions.AddPageRoute("/Productos/CargarImagenesLote", "Productos/CargarImagenesLote");
 });
 

@@ -1,25 +1,41 @@
-﻿@page "/Productos/CargarImagen"
+﻿@page "/SubirImagen"
 @{
-    ViewData["Title"] = "Cargar Imagen";
+    ViewData["Title"] = "Cargar Imágenes por Lote";
     Layout = "_Layout";
 }
 
 <h1>Cargar Imagen</h1>
 
-<form id="cargarImagenForm" enctype="multipart/form-data">
-    <div>
+<form id="cargarImagenForm" class="needs-validation" enctype="multipart/form-data" novalidate>
+    <div class="form-group">
         <label for="codigo">Código del Producto:</label>
-        <input type="text" id="codigo" name="codigo" />
-        <button type="button" id="buscarProducto">Buscar</button>
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" id="codigo" name="codigo" required>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="button" id="buscarProducto">Buscar</button>
+            </div>
+        </div>
+        <div class="invalid-feedback">
+            Por favor, ingrese un código de producto válido.
+        </div>
     </div>
     <div id="productoInfo" style="display:none;">
-        <p>Descripción: <span id="descripcion"></span></p>
-        <p>Imagen Actual: <img id="imagenActual" src="" alt="Imagen del producto" /></p>
-        <div>
-            <label for="nuevaImagen">Nueva Imagen:</label>
-            <input type="file" id="nuevaImagen" name="nuevaImagen" />
-            <button type="button" id="subirImagen">Subir</button>
+        <div class="form-group">
+            <label for="descripcion">Descripción:</label>
+            <p id="descripcion" class="form-control-plaintext"></p>
         </div>
+        <div class="form-group">
+            <label>Imagen Actual:</label>
+            <img id="imagenActual" src="" class="img-fluid img-thumbnail" alt="Imagen del producto">
+        </div>
+        <div class="form-group">
+            <label for="nuevaImagen">Nueva Imagen:</label>
+            <input type="file" class="form-control-file" id="nuevaImagen" name="nuevaImagen" required>
+            <div class="invalid-feedback">
+                Por favor, seleccione una imagen.
+            </div>
+        </div>
+        <button class="btn btn-primary" type="button" id="subirImagen">Subir</button>
     </div>
 </form>
 
