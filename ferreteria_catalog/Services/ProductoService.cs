@@ -75,6 +75,24 @@ namespace ferreteria_catalog.Services
             return producto;
         }
 
+        public async Task ActualizarProductoAsync(ProductoDTO productoDto)
+        {
+            var productoDtoDb = await _productoRepository.GetProductoByIdAsync(productoDto.ProductoId);
+            if (productoDtoDb != null)
+            {
+                var producto = new Producto
+                {
+                    ProductoId = productoDtoDb.ProductoId,
+                    Codigo = productoDtoDb.Codigo,
+                    Descripcion = productoDtoDb.Descripcion,
+                    UndxBulto = productoDtoDb.UndxBulto,
+                    ImagenURL = productoDtoDb.ImagenURL,
+                };
+
+                // Pass the Producto entity to the repository
+                await _productoRepository.ActualizarProductoAsync(producto);
+            }
+        }
 
     }
 }

@@ -199,7 +199,10 @@ namespace ferreteria_catalog.Repositories
                 Existencia = producto.Existencia?.Stock ?? 0
             };
         }
-
-
+        public async Task ActualizarProductoAsync(Producto producto)
+        {
+            _context.Producto.Update(producto);
+            await _context.SaveChangesAsync();
+        }
     }
 }

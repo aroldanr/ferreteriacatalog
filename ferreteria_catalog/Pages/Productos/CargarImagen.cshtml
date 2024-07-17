@@ -1,0 +1,61 @@
+﻿@page "/Productos/CargarImagen"
+@{
+    ViewData["Title"] = "Cargar Imagen";
+    Layout = "_Layout";
+}
+
+<h1>Cargar Imagen</h1>
+
+<form id="cargarImagenForm" enctype="multipart/form-data">
+    <div>
+        <label for="codigo">Código del Producto:</label>
+        <input type="text" id="codigo" name="codigo" />
+        <button type="button" id="buscarProducto">Buscar</button>
+    </div>
+    <div id="productoInfo" style="display:none;">
+        <p>Descripción: <span id="descripcion"></span></p>
+        <p>Imagen Actual: <img id="imagenActual" src="" alt="Imagen del producto" /></p>
+        <div>
+            <label for="nuevaImagen">Nueva Imagen:</label>
+            <input type="file" id="nuevaImagen" name="nuevaImagen" />
+            <button type="button" id="subirImagen">Subir</button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('buscarProducto').addEventListener('click', function () {
+            var codigo = document.getElementById('codigo').value;
+            fetch(`/api/productos/${codigo}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('productoInfo').style.display = 'block';
+                    document.getElementById('descripcion').innerText = data.descripcion;
+                    document.getElementById('imagenActual').src = `/images/${data.imagenURL}`;
+                });
+        });
+
+        document.getElementById('subirImagen').addEventListener('click', function () {
+            var formData = new FormData();
+            var codigo = document.getElementById('codigo').value;
+            var nuevaImagen = document.getElementById('nuevaImagen').files[0];
+
+            formData.append('codigo', codigo);
+            formData.append('nuevaImagen', nuevaImagen);
+
+            fetch('/api/Productos/SubirImagen', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Imagen subida con éxito');
+                    document.getElementById('imagenActual').src = `/images/${data.imagenURL}`;
+                })
+                .catch(error => {
+                    console.error('Error al subir la imagen:', error);
+                });
+        });
+    </script>
+}

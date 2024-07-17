@@ -1,0 +1,40 @@
+﻿@page "/CargarImagenesLote"
+@{
+    ViewData["Title"] = "Cargar Imágenes por Lote";
+    Layout = "_Layout";
+}
+
+<h1>Cargar Imágenes por Lote</h1>
+
+<form id="cargarImagenesLoteForm" enctype="multipart/form-data">
+    <div>
+        <label for="imagenes">Seleccionar Imágenes:</label>
+        <input type="file" id="imagenes" name="imagenes" multiple />
+        <button type="button" id="subirImagenes">Subir</button>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('subirImagenes').addEventListener('click', function () {
+            var formData = new FormData();
+            var imagenes = document.getElementById('imagenes').files;
+
+            for (var i = 0; i < imagenes.length; i++) {
+                formData.append('imagenes', imagenes[i]);
+            }
+
+            fetch('/api/Productos/SubirImagenesPorLote', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Imágenes subidas con éxito');
+                })
+                .catch(error => {
+                    console.error('Error al subir las imágenes:', error);
+                });
+        });
+    </script>
+}

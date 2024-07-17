@@ -6,10 +6,12 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de Razor Pages con convenciones de rutas
-//builder.Services.AddRazorPages(options =>
-//{
-//    options.Conventions.AddPageRoute("/Productos/ProductoDetalles", "/Productos/ProductoDetalles/{id}");
-//});
+builder.Services.AddRazorPages(options =>
+{
+    ///options.Conventions.AddPageRoute("/Productos/ProductoDetalles", "/Productos/ProductoDetalles/{id}");
+    //options.Conventions.AddPageRoute("/Productos/CargarImagen", "Productos/CargarImagen");
+    options.Conventions.AddPageRoute("/Productos/CargarImagenesLote", "Productos/CargarImagenesLote");
+});
 
 
 builder.Configuration

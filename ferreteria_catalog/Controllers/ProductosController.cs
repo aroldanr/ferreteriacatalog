@@ -101,5 +101,66 @@ namespace ferreteria_catalog.Controllers
             }
             return Ok(producto);
         }
+        [HttpPost("SubirImagen")]
+        public async Task<IActionResult> SubirImagen([FromForm] string codigo, [FromForm] IFormFile nuevaImagen)
+        {
+            if (nuevaImagen == null || nuevaImagen.Length == 0)
+            {
+                return BadRequest("No se ha subido ninguna imagen.");
+            }
+
+            var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
+            if (producto == null)
+            {
+                return NotFound("Producto no encontrado.");
+            }
+
+            var fileName = $"{codigo}_{nuevaImagen.FileName}";
+            var filePath = Path.Combine("wwwroot/images", fileName);
+
+            // Eliminar la imagen existente si ya existe
+            if (System.IO.File.Exists(filePath))
+            {
+                System.IO.File.Delete(filePath);
+            }
+
+            // Guardar la nueva imagen
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await nuevaImagen.CopyToAsync(stream);
+            }
+
+            return Ok(new { imagenURL = fileName });
+        }
+
+        [HttpPost("SubirImagenesPorLote")]
+        public async Task<IActionResult> SubirImagenesPorLote([FromForm] List<IFormFile> imagenes)
+        {
+            if (imagenes == null || imagenes.Count == 0)
+            {
+                return BadRequest("No se ha subido ninguna imagen.");
+            }
+
+            foreach (var nuevaImagen in imagenes)
+            {
+                var fileName = nuevaImagen.FileName;
+                var filePath = Path.Combine("wwwroot/images", fileName);
+
+                // Eliminar la imagen existente si ya existe
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+
+                // Guardar la nueva imagen
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await nuevaImagen.CopyToAsync(stream);
+                }
+            }
+
+            return Ok(new { mensaje = "Imágenes subidas correctamente." });
+        }
+
     }
 }
