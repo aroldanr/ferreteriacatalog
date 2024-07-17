@@ -7,20 +7,29 @@
 
 <style>
     .card-custom {
-        height: 350px; /* Ajusta la altura según sea necesario */
+        height: 330px; /* Ajusta la altura según sea necesario */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
 
     .card-img-custom {
         height: 150px; /* Ajusta la altura de la imagen según sea necesario */
-        width: 100%; /* Asegura que la imagen ocupe todo el ancho del contenedor */
         object-fit: contain; /* Ajusta la imagen dentro del contenedor sin recortarla */
         object-position: center; /* Centra la imagen dentro del contenedor */
+        width: 100%;
     }
 
     .card-body-custom {
         overflow: hidden; /* Evita que el contenido se desborde */
         text-overflow: ellipsis; /* Agrega puntos suspensivos al texto desbordado */
         white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+        flex-grow: 1; /* Hace que el cuerpo del card crezca para ocupar el espacio disponible */
+    }
+
+    .card a {
+        text-decoration: none; /* Elimina el subrayado de los enlaces */
+        color: inherit; /* Mantiene el color del texto del enlace igual al del texto normal */
     }
 
 </style>
@@ -30,7 +39,7 @@
 <form id="buscarForm" class="m-5">
     <div class="form-row m-5">
         <div class="input-group mb-1">
-            <input type="text" id="termino" name="Termino" value="@Model.Termino" class="form-control" placeholder="Buscar producto" aria-label="Buscar producto" aria-describedby="button-addon2">
+            <input type="text" id="termino" name="Termino" class="form-control" placeholder="Buscar producto" aria-label="Buscar producto" aria-describedby="button-addon2">
             <button type="button" class="btn btn-outline-primary" id="button-addon2">Buscar</button>
         </div>
     </div>
@@ -68,19 +77,21 @@
                         productosContainer.empty();
                         response.items.forEach(function (item) {
                             var productHtml = `
-                                                            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
-                                                    <div class="card card-custom shadow-sm">
-                                                                <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}">
-                                                        <div class="card-body card-body-custom">
-                                                            <h5 class="card-title">${item.descripcion}</h5>
-                                                            <p class="card-text">${item.descripcion}</p>
-                                                            <p class="card-text"><strong>Existencia:</strong> ${item.existencia}</p>
-                                                            <div class="d-flex justify-content-between align-items-center">
-                                                                <small class="text-muted">${item.marca}</small>
-                                                            </div>
+                                            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                                            <div class="card card-custom shadow-sm">
+                                                                                <a href="/Productos/ProductoDetalles/${item.productoId}">
+                                                    <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}">
+                                                    <div class="card-body card-body-custom">
+                                                        <h5 class="card-title">${item.descripcion}</h5>
+                                                        <p class="card-text">${item.codigo}</p>
+                                                        <p class="card-text"><strong>Existencia:</strong> ${item.existencia}</p>
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <small class="text-muted">${item.marca}</small>
                                                         </div>
                                                     </div>
-                                                </div>`;
+                                                </a>
+                                            </div>
+                                        </div>`;
                             productosContainer.append(productHtml);
                         });
                         totalPaginas = response.totalPaginas;

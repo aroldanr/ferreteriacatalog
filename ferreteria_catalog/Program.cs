@@ -5,6 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuración de Razor Pages con convenciones de rutas
+//builder.Services.AddRazorPages(options =>
+//{
+//    options.Conventions.AddPageRoute("/Productos/ProductoDetalles", "/Productos/ProductoDetalles/{id}");
+//});
+
+
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)

@@ -21,4 +21,12 @@
 		<Content Include="wwwroot\**\*" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Pages\Productos\ProductoDetalles.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="Pages\Productos\ProductoDetalles.cshtml" />
+	</ItemGroup>
+
 </Project>

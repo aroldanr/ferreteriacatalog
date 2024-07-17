@@ -69,5 +69,12 @@ namespace ferreteria_catalog.Services
             return await _productoRepository.BuscarProductosPorTerminoYPaginacionAsync(termino, pagina, cantidadPorPagina);
         }
 
+        public async Task<ProductoDTO> ObtenerProductoPorIdAsync(int id)
+        {
+            var producto = await _productoRepository.GetProductoByIdAsync(id);
+            return producto;
+        }
+
+
     }
 }

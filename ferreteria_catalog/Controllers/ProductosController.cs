@@ -16,16 +16,16 @@ namespace ferreteria_catalog.Controllers
             _productoService = productoService;
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductoById(long id)
-        {
-            var producto = await _productoService.ObtenerProductoPorIdAsync(id);
-            if (producto == null)
-            {
-                return NotFound();
-            }
-            return Ok(producto);
-        }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> GetProductoById(long id)
+        //{
+        //    var producto = await _productoService.ObtenerProductoPorIdAsync(id);
+        //    if (producto == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(producto);
+        //}
 
         [HttpGet("codigo/{codigo}")]
         public async Task<IActionResult> GetProductoByCodigo(string codigo)
@@ -91,6 +91,15 @@ namespace ferreteria_catalog.Controllers
             return Ok(response);
         }
 
-
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProductoById(int id)
+        {
+            var producto = await _productoService.ObtenerProductoPorIdAsync(id);
+            if (producto == null)
+            {
+                return NotFound();
+            }
+            return Ok(producto);
+        }
     }
 }

@@ -15,6 +15,6 @@ namespace ferreteria_catalog.Repositories
         Task<int> ObtenerTotalProductosAsync();
         Task<int> ObtenerTotalProductosPorTerminoAsync(string termino);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina);
-
+        Task<ProductoDTO> GetProductoByIdAsync(int id);
     }
 }

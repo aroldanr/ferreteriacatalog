@@ -176,5 +176,30 @@ namespace ferreteria_catalog.Repositories
             }).ToList();
         }
 
+        public async Task<ProductoDTO> GetProductoByIdAsync(int id)
+        {
+            var producto = await _context.Producto
+                .Include(p => p.Marca)
+                .Include(p => p.Existencia)
+                .FirstOrDefaultAsync(p => p.ProductoId == id);
+
+            if (producto == null)
+            {
+                return null;
+            }
+
+            return new ProductoDTO
+            {
+                ProductoId = producto.ProductoId,
+                Codigo = producto.Codigo,
+                Descripcion = producto.Descripcion,
+                UndxBulto = producto.UndxBulto,
+                Marca = producto.Marca.NombreMarca,
+                ImagenURL = producto.ImagenURL,
+                Existencia = producto.Existencia?.Stock ?? 0
+            };
+        }
+
+
     }
 }

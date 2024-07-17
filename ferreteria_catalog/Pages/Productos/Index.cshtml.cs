@@ -15,31 +15,6 @@ namespace ferreteria_catalog.Pages.Productos
         public IndexModel(IProductoService productoService)
         {
             _productoService = productoService;
-        }
-
-        public IEnumerable<ProductoDTO> Productos { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string Termino { get; set; }
-
-        // Método para cargar todos los productos al cargar la página
-        public async Task OnGetAsync()
-        {
-            Productos = await _productoService.ObtenerTodosProductosAsync();
-        }
-
-        // Método para manejar la búsqueda por término
-        public async Task<IActionResult> OnPostBuscarAsync()
-        {
-            if (!string.IsNullOrEmpty(Termino))
-            {
-                Productos = await _productoService.BuscarProductosPorTerminoAsync(Termino);
-            }
-            else
-            {
-                Productos = await _productoService.ObtenerTodosProductosAsync();
-            }
-            return Page();
-        }
+        }       
     }
 }
