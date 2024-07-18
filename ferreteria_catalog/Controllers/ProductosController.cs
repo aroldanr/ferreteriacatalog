@@ -1,6 +1,7 @@
 ﻿using ferreteria_catalog.Dtos;
 using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ferreteria_catalog.Controllers
@@ -15,18 +16,7 @@ namespace ferreteria_catalog.Controllers
         {
             _productoService = productoService;
         }
-
-        //[HttpGet("{id}")]
-        //public async Task<IActionResult> GetProductoById(long id)
-        //{
-        //    var producto = await _productoService.ObtenerProductoPorIdAsync(id);
-        //    if (producto == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(producto);
-        //}
-
+         [Authorize(Roles = "Admin")]
         [HttpGet("codigo/{codigo}")]
         public async Task<IActionResult> GetProductoByCodigo(string codigo)
         {
@@ -101,6 +91,8 @@ namespace ferreteria_catalog.Controllers
             }
             return Ok(producto);
         }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("SubirImagen")]
         public async Task<IActionResult> SubirImagen([FromForm] string codigo, [FromForm] IFormFile nuevaImagen)
         {
@@ -133,6 +125,7 @@ namespace ferreteria_catalog.Controllers
             return Ok(new { imagenURL = fileName });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("SubirImagenesPorLote")]
         public async Task<IActionResult> SubirImagenesPorLote([FromForm] List<IFormFile> imagenes)
         {

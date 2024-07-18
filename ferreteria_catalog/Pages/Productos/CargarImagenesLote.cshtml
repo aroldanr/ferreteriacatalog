@@ -1,7 +1,9 @@
 ﻿@page "/CargarImagenesLote"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
 @{
     ViewData["Title"] = "Cargar Imágenes por Lote";
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
 }
 
 <h1>Cargar Imágenes por Lote</h1>
@@ -23,6 +25,7 @@
         document.getElementById('subirImagenes').addEventListener('click', function () {
             var formData = new FormData();
             var imagenes = document.getElementById('imagenes').files;
+            var token = localStorage.getItem('token'); // Obtener el token almacenado
 
             for (var i = 0; i < imagenes.length; i++) {
                 formData.append('imagenes', imagenes[i]);
@@ -30,9 +33,18 @@
 
             fetch('/api/Productos/SubirImagenesPorLote', {
                 method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token // Incluir el token en los encabezados
+                },
                 body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('Error al subir las imágenes');
+                    }
+                })
                 .then(data => {
                     alert('Imágenes subidas con éxito');
                 })
@@ -42,3 +54,4 @@
         });
     </script>
 }
+

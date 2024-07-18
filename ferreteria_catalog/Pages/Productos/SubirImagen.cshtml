@@ -1,9 +1,10 @@
 ﻿@page "/SubirImagen"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
 @{
     ViewData["Title"] = "Cargar Imágenes por Lote";
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
 }
-
 <h1>Cargar Imagen</h1>
 
 <form id="cargarImagenForm" class="needs-validation" enctype="multipart/form-data" novalidate>
@@ -40,38 +41,69 @@
 </form>
 
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        document.getElementById('buscarProducto').addEventListener('click', function () {
-            var codigo = document.getElementById('codigo').value;
-            fetch(`/api/productos/${codigo}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('productoInfo').style.display = 'block';
-                    document.getElementById('descripcion').innerText = data.descripcion;
-                    document.getElementById('imagenActual').src = `/images/${data.imagenURL}`;
-                });
-        });
+        debugger
+        $(document).ready(function () {
+            // Obtener el token desde el localStorage
+            var token = localStorage.getItem('token');
 
-        document.getElementById('subirImagen').addEventListener('click', function () {
-            var formData = new FormData();
-            var codigo = document.getElementById('codigo').value;
-            var nuevaImagen = document.getElementById('nuevaImagen').files[0];
+            // Configurar fetch para incluir el token en las solicitudes
+            function fetchWithToken(url, options) {
+                options = options || {};
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+                return fetch(url, options);
+            }
 
-            formData.append('codigo', codigo);
-            formData.append('nuevaImagen', nuevaImagen);
+            document.getElementById('buscarProducto').addEventListener('click', function () {
+                var codigo = document.getElementById('codigo').value;
+                fetchWithToken(`/api/Productos/codigo/${codigo}`)
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Error al buscar producto');
+                        }
+                    })
+                    .then(data => {
+                        document.getElementById('productoInfo').style.display = 'block';
+                        document.getElementById('descripcion').innerText = data[0].descripcion;
+                        document.getElementById('imagenActual').src = `/images/${data[0].imagenURL}`;
+                    })
+                    .catch(error => {
+                        console.error('Error al buscar producto:', error);
+                    });
+            });
 
-            fetch('/api/Productos/SubirImagen', {
-                method: 'POST',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Imagen subida con éxito');
-                    document.getElementById('imagenActual').src = `/images/${data.imagenURL}`;
+
+            document.getElementById('subirImagen').addEventListener('click', function () {
+                var formData = new FormData();
+                var codigo = document.getElementById('codigo').value;
+                var nuevaImagen = document.getElementById('nuevaImagen').files[0];
+
+                formData.append('codigo', codigo);
+                formData.append('nuevaImagen', nuevaImagen);
+
+                fetchWithToken('/api/Productos/SubirImagen', {
+                    method: 'POST',
+                    body: formData
                 })
-                .catch(error => {
-                    console.error('Error al subir la imagen:', error);
-                });
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            throw new Error('Error al subir imagen');
+                        }
+                    })
+                    .then(data => {
+                        alert('Imagen subida con éxito');
+                        document.getElementById('imagenActual').src = `/images/${data.imagenURL}`;
+                    })
+                    .catch(error => {
+                        console.error('Error al subir la imagen:', error);
+                    });
+            });
         });
     </script>
 }

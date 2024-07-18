@@ -1,18 +1,19 @@
 using ferreteria_catalog.Data;
 using ferreteria_catalog.Repositories;
 using ferreteria_catalog.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Configuración de Razor Pages con convenciones de rutas
 builder.Services.AddRazorPages(options =>
 {
-    ///options.Conventions.AddPageRoute("/Productos/ProductoDetalles", "/Productos/ProductoDetalles/{id}");
     options.Conventions.AddPageRoute("/Productos/SubirImagen", "Productos/SubirImagen");
     options.Conventions.AddPageRoute("/Productos/CargarImagenesLote", "Productos/CargarImagenesLote");
 });
-
 
 builder.Configuration
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -20,7 +21,6 @@ builder.Configuration
     .AddEnvironmentVariables();
 
 // Add services to the container.
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -28,18 +28,77 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 // Register repositories and services
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Add controllers and Razor Pages
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 
+// Configuración de IHttpContextAccessor
+builder.Services.AddHttpContextAccessor();
+
+// Configuración de JWT
+var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSecretKey"]);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Configura el servicio de autorización
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+});
+
 // End Register repositories and services
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
 var app = builder.Build();
+
+// Middleware para agregar el token JWT de las cookies a los encabezados de las solicitudes
+app.Use(async (context, next) =>
+{
+    var token = context.Request.Cookies["jwtToken"];
+    if (!string.IsNullOrEmpty(token))
+    {
+        if (!context.Request.Headers.ContainsKey("Authorization"))
+        {
+            context.Request.Headers.Add("Authorization", "Bearer " + token);
+        }
+    }
+    await next();
+});
+
+
+app.UseCors("AllowAllOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -48,12 +107,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-app.UseRouting();
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseRouting();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();

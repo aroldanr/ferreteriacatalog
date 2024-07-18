@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Ferretería</title>
+    <link rel="stylesheet" href="~/bootstrap/css/bootstrap.css">
+    <style>
+        body {
+            padding-top: 56px;
+        }
+
+        .navbar-nav.ml-auto {
+            margin-left: auto;
+        }
+
+        .navbar-nav .nav-item {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="/">Ferretería</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/Productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Productos/SubirImagen">Subir Imagen</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Productos/CargarImagenesLote">Cargar Imágenes por Lote</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <span class="nav-link">Hola, <span id="userName"></span></span>
+                </li>
+                <li class="nav-item">
+                    <button class="btn btn-link nav-link" id="logoutButton" style="cursor:pointer;">Cerrar Sesión</button>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container flex-grow-1">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="border-top footer text-muted mt-auto">
+        <div class="container">
+            &copy; <script>document.write(new Date().getFullYear())</script> - Ferretería - <a href="/Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7ie4y3Md5FL2XRX5FrxJx58bdrFzYgYqV1c" crossorigin="anonymous"></script>
+    <script src="~/bootstrap/js/bootstrap.js"></script>
+    @RenderSection("Scripts", required: false)
+    <script>
+        $(document).ready(function () {
+            // Mostrar el nombre del usuario en el layout
+            $('#userName').text(localStorage.getItem('username'));
+
+            // Cerrar sesión
+            $('#logoutButton').click(function () {
+                // Eliminar el token del almacenamiento local
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+                // Redirigir a la página de inicio de sesión
+                window.location.href = "/Login/Login";
+            });
+
+            // Activar el menú colapsable en versión móvil
+            $('.navbar-toggler').click(function () {
+                $('#navbarNav').collapse('toggle');
+            });
+        });
+    </script>
+</body>
+</html>

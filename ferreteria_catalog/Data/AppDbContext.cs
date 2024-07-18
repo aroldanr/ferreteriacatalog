@@ -14,9 +14,15 @@ namespace ferreteria_catalog.Data
         public DbSet<Producto> Producto { get; set; }
         public DbSet<Marca> Marca { get; set; }
         public DbSet<Existencia> Existencia { get; set; }
+        public DbSet<Usuario> Usuario { get; set; }
+        public DbSet<Rol> Role { get; set; }
+        public DbSet<Modulo> Modulos { get; set; }
+        public DbSet<RolModulo> RolModulo { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<Producto>()
                 .HasOne(p => p.Marca)
                 .WithMany()
@@ -29,6 +35,19 @@ namespace ferreteria_catalog.Data
                 .HasOne(e => e.Producto)
                 .WithOne(p => p.Existencia)
                 .HasForeignKey<Existencia>(e => e.ProductoId);
+
+            modelBuilder.Entity<RolModulo>()
+           .HasKey(rm => new { rm.RolId, rm.ModuloId });
+
+            modelBuilder.Entity<RolModulo>()
+                .HasOne(rm => rm.Rol)
+                .WithMany(r => r.RolModulo)
+                .HasForeignKey(rm => rm.RolId);
+
+            modelBuilder.Entity<RolModulo>()
+                .HasOne(rm => rm.Modulo)
+                .WithMany(m => m.RolModulo)
+                .HasForeignKey(rm => rm.ModuloId);
         }
     }
 }
