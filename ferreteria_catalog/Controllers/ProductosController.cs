@@ -3,6 +3,7 @@ using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ferreteria_catalog.Controllers
 {
@@ -11,10 +12,12 @@ namespace ferreteria_catalog.Controllers
     public class ProductosController : Controller
     {
         private readonly IProductoService _productoService;
+        private readonly ILogger<ProductosController> _logger;
 
-        public ProductosController(IProductoService productoService)
+        public ProductosController(IProductoService productoService, ILogger<ProductosController> logger)
         {
             _productoService = productoService;
+            _logger = logger;
         }
          [Authorize(Roles = "Admin")]
         [HttpGet("codigo/{codigo}")]

@@ -4,9 +4,24 @@ using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.Text;
+using Serilog.Events;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar Serilog para logging en archivos
+var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "log.txt");
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.File(logFilePath, rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Configurar logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Configuración de Razor Pages con convenciones de rutas
 builder.Services.AddRazorPages(options =>
@@ -83,6 +98,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseRouting();
+
 // Middleware para agregar el token JWT de las cookies a los encabezados de las solicitudes
 app.Use(async (context, next) =>
 {
@@ -92,6 +109,7 @@ app.Use(async (context, next) =>
         if (!context.Request.Headers.ContainsKey("Authorization"))
         {
             context.Request.Headers.Add("Authorization", "Bearer " + token);
+            Console.WriteLine("Token añadido al encabezado: " + token); // Log para depuración
         }
     }
     await next();
@@ -110,7 +128,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
-app.UseRouting();
+
 
 app.UseAuthentication();
 app.UseAuthorization();
