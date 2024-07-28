@@ -33,6 +33,7 @@
 	  <None Remove="Pages\Login\Login.cshtml" />
 	  <None Remove="Pages\Productos\CargarImagenesLote.cshtml" />
 	  <None Remove="Pages\Productos\ProductoDetalles.cshtml" />
+	  <None Remove="Pages\Productos\ProductoDetallesAdmin.cshtml" />
 	  <None Remove="Pages\Productos\ProductosAdmin.cshtml" />
 	  <None Remove="Pages\Productos\SubirImagen.cshtml" />
 	  <None Remove="Pages\_AdminLayout.cshtml" />

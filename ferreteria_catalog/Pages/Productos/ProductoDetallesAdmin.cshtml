@@ -1,0 +1,89 @@
+﻿@page "/Productos/ProductoDetallesAdmin/{id}"
+@{
+    ViewData["Title"] = "Detalles del Producto";
+    Layout = "_AdminLayout";
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/Productos/ProductosAdmin">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Detalles del Producto</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image-container">
+                <img id="imagen" src="" class="img-fluid product-image" alt="Imagen del producto">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h1 id="nombreProducto"></h1>
+            <p><strong>Código:</strong> <span id="codigo"></span></p>
+            <p><strong>Marca:</strong> <span id="marca"></span></p>
+            <p><strong>Existencia:</strong> <span id="existencia"></span></p>
+            <p><strong>Descripción:</strong> <span id="descripcion"></span></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var productId = '@(RouteData.Values["id"])';
+
+            $.ajax({
+                url: '/api/Productos/' + productId,
+                type: 'GET',
+                success: function (data) {
+                    $('#nombreProducto').text(data.descripcion);
+                    $('#codigo').text(data.codigo);
+                    $('#marca').text(data.marca);
+                    $('#existencia').text(data.existencia);
+                    $('#descripcion').text(data.descripcion);
+                    $('#imagen').attr('src', '/images/' + data.imagenURL);
+                    $('#imagen').attr('alt', data.descripcion);
+                },
+                error: function (error) {
+                    console.error('Error al cargar el producto:', error);
+                }
+            });
+        });
+    </script>
+}
+
+<style>
+    .breadcrumb {
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+
+    .product-image-container {
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .product-image {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        .product-details p {
+            margin: 0.5rem 0;
+        }
+
+        .product-details h1 {
+            margin-bottom: 1rem;
+        }
+</style>
