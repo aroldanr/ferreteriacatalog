@@ -46,7 +46,7 @@ namespace ferreteria_catalog.Repositories
             _httpContextAccessor.HttpContext.Response.Cookies.Append("jwtToken", tokenString, new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = false,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.AddHours(1)
             });
