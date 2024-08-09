@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ferreteria_catalog.Repositories
 {
-   
+
     public class ProductoRepository : IProductoRepository
     {
         private readonly AppDbContext _context;
@@ -59,10 +59,10 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorCodigoAsync(string codigo)
         {
-            var productos = await _context.Producto
+            var productos = await _context.Producto.AsNoTracking()
                 .Include(p => p.Marca)
                 .Include(p => p.Existencia)
-                .Where(p => p.Codigo.Contains(codigo))
+                .Where(p => p.Codigo == codigo)
                 .ToListAsync();
 
             return productos.Select(p => new ProductoDTO
@@ -73,7 +73,8 @@ namespace ferreteria_catalog.Repositories
                 UndxBulto = p.UndxBulto,
                 Marca = p.Marca.NombreMarca,
                 ImagenURL = p.ImagenURL,
-                Existencia = p.Existencia?.Stock ?? 0
+                Existencia = p.Existencia?.Stock ?? 0,
+                MarcaId = p.MarcaId,
             }).ToList();
         }
 
@@ -156,25 +157,32 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
         {
+            // Normalizar el término de búsqueda a minúsculas para evitar problemas con la búsqueda (opcional)
+            termino = termino?.ToLower() ?? string.Empty;
+
+            // Realizar la consulta con paginación y manejo de nulos en la base de datos
             var productos = await _context.Producto
                 .Include(p => p.Marca)
                 .Include(p => p.Existencia)
-                .Where(p => p.Descripcion.Contains(termino) || p.Codigo.Contains(termino))
+                .Where(p => string.IsNullOrEmpty(termino) || p.Descripcion.ToLower().Contains(termino) || p.Codigo.ToLower().Contains(termino))
+                .OrderBy(p => p.ProductoId)  // Asegura un orden consistente para la paginación
                 .Skip((pagina - 1) * cantidadPorPagina)
                 .Take(cantidadPorPagina)
                 .ToListAsync();
 
+            // Proyectar los resultados a ProductoDTO, manejando posibles valores nulos
             return productos.Select(p => new ProductoDTO
             {
                 ProductoId = p.ProductoId,
-                Codigo = p.Codigo,
-                Descripcion = p.Descripcion,
-                UndxBulto = p.UndxBulto,
-                Marca = p.Marca.NombreMarca,
-                ImagenURL = p.ImagenURL,
-                Existencia = p.Existencia?.Stock ?? 0
+                Codigo = p.Codigo ?? "N/A",  // Asignar "N/A" si el código es nulo
+                Descripcion = p.Descripcion ?? "Descripción no disponible",  // Valor predeterminado si la descripción es nula
+                UndxBulto = p.UndxBulto ?? 0,  // Si UndxBulto es nulo, asignar 0
+                Marca = p.Marca?.NombreMarca ?? "Sin Marca",  // Si la marca es nula, asignar "Sin Marca"
+                ImagenURL = p.ImagenURL ?? string.Empty,  // Si ImagenURL es nulo, asignar una cadena vacía
+                Existencia = p.Existencia?.Stock ?? 0  // Si no hay existencia, asignar 0
             }).ToList();
         }
+
 
         public async Task<ProductoDTO> GetProductoByIdAsync(int id)
         {
@@ -196,13 +204,22 @@ namespace ferreteria_catalog.Repositories
                 UndxBulto = producto.UndxBulto,
                 Marca = producto.Marca.NombreMarca,
                 ImagenURL = producto.ImagenURL,
-                Existencia = producto.Existencia?.Stock ?? 0
+                Existencia = producto.Existencia?.Stock ?? 0,
+                MarcaId = producto.MarcaId
             };
         }
         public async Task ActualizarProductoAsync(Producto producto)
         {
-            _context.Producto.Update(producto);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Producto.Update(producto);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+            
         }
     }
 }

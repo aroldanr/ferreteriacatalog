@@ -110,7 +110,7 @@ namespace ferreteria_catalog.Controllers
                 return NotFound("Producto no encontrado.");
             }
 
-            var fileName = $"{codigo}_{nuevaImagen.FileName}";
+            var fileName = $"{codigo}_{Path.GetFileNameWithoutExtension(nuevaImagen.FileName)}{Path.GetExtension(nuevaImagen.FileName)}";
             var filePath = Path.Combine("wwwroot/images", fileName);
 
             // Eliminar la imagen existente si ya existe
@@ -125,8 +125,13 @@ namespace ferreteria_catalog.Controllers
                 await nuevaImagen.CopyToAsync(stream);
             }
 
+            // Actualizar la columna ImagenURL en la tabla Producto
+            producto.FirstOrDefault().ImagenURL = fileName;
+            await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
+
             return Ok(new { imagenURL = fileName });
         }
+
 
         [Authorize(Roles = "Admin")]
         [HttpPost("SubirImagenesPorLote")]

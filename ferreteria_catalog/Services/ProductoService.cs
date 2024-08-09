@@ -77,16 +77,17 @@ namespace ferreteria_catalog.Services
 
         public async Task ActualizarProductoAsync(ProductoDTO productoDto)
         {
-            var productoDtoDb = await _productoRepository.GetProductoByIdAsync(productoDto.ProductoId);
-            if (productoDtoDb != null)
+            //var productoDtoDb = await _productoRepository.GetProductoByIdAsync(productoDto.ProductoId);
+            if (productoDto != null)
             {
                 var producto = new Producto
                 {
-                    ProductoId = productoDtoDb.ProductoId,
-                    Codigo = productoDtoDb.Codigo,
-                    Descripcion = productoDtoDb.Descripcion,
-                    UndxBulto = productoDtoDb.UndxBulto,
-                    ImagenURL = productoDtoDb.ImagenURL,
+                    ProductoId = productoDto.ProductoId,
+                    Codigo = productoDto.Codigo,
+                    Descripcion = productoDto.Descripcion,
+                    UndxBulto = productoDto.UndxBulto,
+                    ImagenURL = productoDto.ImagenURL,
+                    MarcaId = productoDto.MarcaId
                 };
 
                 // Pass the Producto entity to the repository

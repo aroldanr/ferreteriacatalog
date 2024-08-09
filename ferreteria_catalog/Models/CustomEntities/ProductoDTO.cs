@@ -9,5 +9,6 @@
         public string Marca { get; set; }
         public string ImagenURL { get; set; }
         public int Existencia { get; set; }
+        public int? MarcaId { get; set; }
     }
 }
