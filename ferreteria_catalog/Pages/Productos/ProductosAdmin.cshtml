@@ -80,7 +80,7 @@
                                             <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
                                             <div class="card card-custom shadow-sm">
                                                                                 <a href="/Productos/ProductoDetallesAdmin/${item.productoId}">
-                                                    <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}">
+                                                            <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}" onerror="this.onerror=null; this.src='/images/folder.png';">
                                                     <div class="card-body card-body-custom">
                                                         <h5 class="card-title">${item.descripcion}</h5>
                                                         <p class="card-text">${item.codigo}</p>

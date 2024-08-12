@@ -3,6 +3,7 @@ using ferreteria_catalog.Models;
 using ferreteria_catalog.Models.CustomEntities;
 using Microsoft.EntityFrameworkCore;
 
+
 namespace ferreteria_catalog.Repositories
 {
 
@@ -59,24 +60,27 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorCodigoAsync(string codigo)
         {
-            var productos = await _context.Producto.AsNoTracking()
-                .Include(p => p.Marca)
-                .Include(p => p.Existencia)
-                .Where(p => p.Codigo == codigo)
-                .ToListAsync();
+            var query = from p in _context.Producto.AsNoTracking()
+                        join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
+                        from m in marcaJoin.DefaultIfEmpty()
+                        join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
+                        from e in existenciaJoin.DefaultIfEmpty()
+                        where p.Codigo == codigo
+                        select new ProductoDTO
+                        {
+                            ProductoId = p.ProductoId,
+                            Codigo = p.Codigo ?? "N/A",  // Manejo de nulos para Código
+                            Descripcion = p.Descripcion ?? "Descripción no disponible",  // Manejo de nulos para Descripción
+                            UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
+                            Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
+                            ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
+                            Existencia = e != null ? e.Stock : 0,  // Manejo de nulos para Existencia
+                            MarcaId = p.MarcaId
+                        };
 
-            return productos.Select(p => new ProductoDTO
-            {
-                ProductoId = p.ProductoId,
-                Codigo = p.Codigo,
-                Descripcion = p.Descripcion,
-                UndxBulto = p.UndxBulto,
-                Marca = p.Marca.NombreMarca,
-                ImagenURL = p.ImagenURL,
-                Existencia = p.Existencia?.Stock ?? 0,
-                MarcaId = p.MarcaId,
-            }).ToList();
+            return await query.ToListAsync();
         }
+
 
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoAsync(string termino)
         {
@@ -177,12 +181,12 @@ namespace ferreteria_catalog.Repositories
                         select new ProductoDTO
                         {
                             ProductoId = p.ProductoId,
-                            Codigo = p.Codigo ?? "N/A",  // Asignar "N/A" si el código es nulo
-                            Descripcion = p.Descripcion ?? "Descripción no disponible",  // Valor predeterminado si la descripción es nula
-                            UndxBulto = p.UndxBulto ?? 0,  // Si UndxBulto es nulo, asignar 0
-                            Marca = m != null ? m.NombreMarca : "Sin Marca",  // Si la marca es nula, asignar "Sin Marca"
-                            ImagenURL = p.ImagenURL ?? string.Empty,  // Si ImagenURL es nulo, asignar una cadena vacía
-                            Existencia = e != null ? e.Stock : 0   // Si no hay existencia, asignar 0
+                            Codigo = p.Codigo ?? "N/A",
+                            Descripcion = p.Descripcion ?? "Descripción no disponible",
+                            UndxBulto = p.UndxBulto ?? 0,
+                            Marca = m != null ? m.NombreMarca : "Sin Marca",
+                            ImagenURL = p.ImagenURL ?? string.Empty,
+                            Existencia = e != null ? e.Stock : 0
                         };
 
             return await query
@@ -190,6 +194,8 @@ namespace ferreteria_catalog.Repositories
                 .Take(cantidadPorPagina)
                 .ToListAsync();
         }
+
+
         public async Task<ProductoDTO> GetProductoByIdAsync(int id)
         {
             var producto = await _context.Producto
