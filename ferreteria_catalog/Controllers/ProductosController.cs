@@ -3,6 +3,8 @@ using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
 
 namespace ferreteria_catalog.Controllers
 {
@@ -119,10 +121,23 @@ namespace ferreteria_catalog.Controllers
                 System.IO.File.Delete(filePath);
             }
 
-            // Guardar la nueva imagen
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            // Procesar y comprimir la imagen antes de guardarla
+            using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
             {
-                await nuevaImagen.CopyToAsync(stream);
+                // Ajustar calidad de la imagen (ej. 75%)
+                var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                {
+                    Quality = 75 // Puedes ajustar la calidad aquí
+                };
+
+                // Redimensionar la imagen si es necesario (opcional)
+                image.Mutate(x => x.Resize(new ResizeOptions
+                {
+                    Mode = ResizeMode.Max,
+                    Size = new Size(800, 800) // Ajusta el tamaño según tus necesidades
+                }));
+
+                await image.SaveAsync(filePath, encoder);
             }
 
             // Actualizar la columna ImagenURL en la tabla Producto
@@ -131,7 +146,6 @@ namespace ferreteria_catalog.Controllers
 
             return Ok(new { imagenURL = fileName });
         }
-
 
         [Authorize(Roles = "Admin")]
         [HttpPost("SubirImagenesPorLote")]
@@ -153,15 +167,29 @@ namespace ferreteria_catalog.Controllers
                     System.IO.File.Delete(filePath);
                 }
 
-                // Guardar la nueva imagen
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // Procesar y comprimir la imagen antes de guardarla
+                using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
                 {
-                    await nuevaImagen.CopyToAsync(stream);
+                    // Ajustar calidad de la imagen (ej. 75%)
+                    var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                    {
+                        Quality = 75 // Puedes ajustar la calidad aquí
+                    };
+
+                    // Redimensionar la imagen si es necesario (opcional)
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Mode = ResizeMode.Max,
+                        Size = new Size(800, 800) // Ajusta el tamaño según tus necesidades
+                    }));
+
+                    await image.SaveAsync(filePath, encoder);
                 }
             }
 
             return Ok(new { mensaje = "Imágenes subidas correctamente." });
         }
+
 
     }
 }
