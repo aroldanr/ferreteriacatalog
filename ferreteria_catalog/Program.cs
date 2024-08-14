@@ -50,6 +50,9 @@ builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddScoped<IModulosRepository, ModulosRepository>();
+builder.Services.AddScoped<IModuloService, ModuloService>();
+
 // Add controllers and Razor Pages
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
@@ -81,6 +84,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("Colab", policy => policy.RequireRole("Colab"));
 });
 
 // End Register repositories and services
@@ -137,6 +141,6 @@ app.MapRazorPages();
 app.MapControllers();
 
 // Configurar la página de inicio
-app.MapGet("/", () => Results.Redirect("/Productos/Index"));
+app.MapGet("/", () => Results.Redirect("/Login/Login"));
 
 app.Run();

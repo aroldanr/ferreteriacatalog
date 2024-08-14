@@ -5,7 +5,6 @@ namespace ferreteria_catalog.Services
 {
     public interface IProductoService
     {
-        Task<ProductoDTO> ObtenerProductoPorIdAsync(long id);        
         Task<IEnumerable<ProductoDTO>> ObtenerTodosProductosAsync();
         Task AgregarStockAsync(int id, int cantidad);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorNombreAsync(string nombre);

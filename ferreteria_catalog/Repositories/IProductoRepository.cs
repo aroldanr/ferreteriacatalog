@@ -5,7 +5,6 @@ namespace ferreteria_catalog.Repositories
 {
     public interface IProductoRepository
     {
-        Task<ProductoDTO> GetProductoByIdAsync(long id);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorNombreAsync(string nombre);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorCodigoAsync(string codigo);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoAsync(string termino);

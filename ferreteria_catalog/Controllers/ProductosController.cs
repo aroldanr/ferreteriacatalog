@@ -3,7 +3,6 @@ using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace ferreteria_catalog.Controllers
 {
@@ -19,7 +18,8 @@ namespace ferreteria_catalog.Controllers
             _productoService = productoService;
             _logger = logger;
         }
-         [Authorize(Roles = "Admin")]
+
+        [Authorize(Roles = "Admin,Colab")]
         [HttpGet("codigo/{codigo}")]
         public async Task<IActionResult> GetProductoByCodigo(string codigo)
         {

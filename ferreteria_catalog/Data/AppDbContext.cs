@@ -36,8 +36,29 @@ namespace ferreteria_catalog.Data
                 .WithOne(p => p.Existencia)
                 .HasForeignKey<Existencia>(e => e.ProductoId);
 
+            // Configuración para la entidad Usuario
+            modelBuilder.Entity<Usuario>()
+                .HasKey(u => u.UsuarioId);
+
+            modelBuilder.Entity<Usuario>()
+                .HasOne(u => u.Rol)
+                .WithMany(r => r.Usuario)
+                .HasForeignKey(u => u.RolId)
+                .OnDelete(DeleteBehavior.Restrict); // Configuración del comportamiento de eliminación
+
+            // Configuración para la entidad Modulo
+            modelBuilder.Entity<Modulo>()
+                .HasKey(m => m.ModuloId);
+
+            modelBuilder.Entity<Modulo>()
+                .HasMany(m => m.RolModulo)
+                .WithOne(rm => rm.Modulo)
+                .HasForeignKey(rm => rm.ModuloId)
+                .OnDelete(DeleteBehavior.Cascade); // Configuración del comportamiento de eliminación
+
+            // Configuración para la entidad RolModulo (ya configurada)
             modelBuilder.Entity<RolModulo>()
-           .HasKey(rm => new { rm.RolId, rm.ModuloId });
+                .HasKey(rm => new { rm.RolId, rm.ModuloId });
 
             modelBuilder.Entity<RolModulo>()
                 .HasOne(rm => rm.Rol)

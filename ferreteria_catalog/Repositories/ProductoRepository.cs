@@ -15,29 +15,6 @@ namespace ferreteria_catalog.Repositories
             _context = context;
         }
 
-        public async Task<ProductoDTO> GetProductoByIdAsync(long id)
-        {
-            var producto = await _context.Producto
-                        .Include(p => p.Marca)
-                        .FirstOrDefaultAsync(p => p.ProductoId == id);
-
-            if (producto == null) return null;
-
-            var existencia = await _context.Existencia
-                .FirstOrDefaultAsync(e => e.ProductoId == id);
-
-            return new ProductoDTO
-            {
-                ProductoId = producto.ProductoId,
-                Codigo = producto.Codigo,
-                Descripcion = producto.Descripcion,
-                UndxBulto = producto.UndxBulto,
-                Marca = producto.Marca.NombreMarca,
-                ImagenURL = producto.ImagenURL,
-                Existencia = existencia?.Stock ?? 0
-            };
-        }
-
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorNombreAsync(string nombre)
         {
             var productos = await _context.Producto
@@ -54,7 +31,7 @@ namespace ferreteria_catalog.Repositories
                 UndxBulto = p.UndxBulto,
                 Marca = p.Marca.NombreMarca,
                 ImagenURL = p.ImagenURL,
-                Existencia = p.Existencia?.Stock ?? 0
+                Existencia = p != null ? p.UndxBulto : 0
             }).ToList();
         }
 
@@ -74,7 +51,7 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
                             Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
                             ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
-                            Existencia = e != null ? e.Stock : 0,  // Manejo de nulos para Existencia
+                            Existencia = p != null ? p.UndxBulto : 0,  // Manejo de nulos para Existencia
                             MarcaId = p.MarcaId
                         };
 
@@ -142,7 +119,7 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
                             Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
                             ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
-                            Existencia = e != null ? e.Stock : 0 // Manejo de nulos para Existencia
+                            Existencia = p != null ? p.UndxBulto : 0 // Manejo de nulos para Existencia
                         };
 
             return await query
@@ -167,16 +144,22 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
         {
+            // Normalizar el término de búsqueda a minúsculas
             termino = termino?.ToLower() ?? string.Empty;
 
+            // Dividir el término en palabras individuales
+            var palabrasClave = termino.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Construir la consulta
             var query = from p in _context.Producto
                         join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
                         from m in marcaJoin.DefaultIfEmpty()
                         join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
                         from e in existenciaJoin.DefaultIfEmpty()
-                        where string.IsNullOrEmpty(termino) ||
-                              (p.Descripcion != null && p.Descripcion.ToLower().Contains(termino)) ||
-                              (p.Codigo != null && p.Codigo.ToLower().Contains(termino))
+                        where palabrasClave.All(palabra =>
+                                  (p.Descripcion != null && p.Descripcion.ToLower().Contains(palabra)) ||
+                                  (p.Codigo != null && p.Codigo.ToLower().Contains(palabra)) || 
+                                  (m.NombreMarca != null && m.NombreMarca.ToLower().Contains(palabra)))
                         orderby p.ProductoId
                         select new ProductoDTO
                         {
@@ -186,39 +169,36 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,
                             Marca = m != null ? m.NombreMarca : "Sin Marca",
                             ImagenURL = p.ImagenURL ?? string.Empty,
-                            Existencia = e != null ? e.Stock : 0
+                            Existencia = e != null ? p.UndxBulto : 0
                         };
 
+            // Aplicar paginación
             return await query
                 .Skip((pagina - 1) * cantidadPorPagina)
                 .Take(cantidadPorPagina)
                 .ToListAsync();
         }
-
-
         public async Task<ProductoDTO> GetProductoByIdAsync(int id)
         {
-            var producto = await _context.Producto
-                .Include(p => p.Marca)
-                .Include(p => p.Existencia)
-                .FirstOrDefaultAsync(p => p.ProductoId == id);
+            var query = from p in _context.Producto.AsNoTracking()
+                        join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
+                        from m in marcaJoin.DefaultIfEmpty()
+                        join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
+                        from e in existenciaJoin.DefaultIfEmpty()
+                        where p.ProductoId == id
+                        select new ProductoDTO
+                        {
+                            ProductoId = p.ProductoId,
+                            Codigo = p.Codigo ?? "N/A",  // Manejo de nulos para Código
+                            Descripcion = p.Descripcion ?? "Descripción no disponible",  // Manejo de nulos para Descripción
+                            UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
+                            Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
+                            ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
+                            Existencia = p != null ? p.UndxBulto : 0,  // Manejo de nulos para Existencia
+                            MarcaId = p.MarcaId
+                        };
 
-            if (producto == null)
-            {
-                return null;
-            }
-
-            return new ProductoDTO
-            {
-                ProductoId = producto.ProductoId,
-                Codigo = producto.Codigo,
-                Descripcion = producto.Descripcion,
-                UndxBulto = producto.UndxBulto,
-                Marca = producto.Marca.NombreMarca,
-                ImagenURL = producto.ImagenURL,
-                Existencia = producto.Existencia?.Stock ?? 0,
-                MarcaId = producto.MarcaId
-            };
+            return await query.FirstOrDefaultAsync();
         }
         public async Task ActualizarProductoAsync(Producto producto)
         {
