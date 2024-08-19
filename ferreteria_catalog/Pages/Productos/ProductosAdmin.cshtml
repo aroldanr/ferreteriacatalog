@@ -6,10 +6,10 @@
 
 <style>
     .card-custom {
-        height: 330px; /* Ajusta la altura según sea necesario */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        height: 100%; /* Asegura que el card ocupe toda la altura disponible */
     }
 
     .card-img-custom {
@@ -20,10 +20,21 @@
     }
 
     .card-body-custom {
-        overflow: hidden; /* Evita que el contenido se desborde */
-        text-overflow: ellipsis; /* Agrega puntos suspensivos al texto desbordado */
-        white-space: nowrap; /* Evita que el texto se divida en varias líneas */
         flex-grow: 1; /* Hace que el cuerpo del card crezca para ocupar el espacio disponible */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .card-title {
+        white-space: normal; /* Permite que el texto se divida en varias líneas */
+        overflow-wrap: break-word; /* Fuerza un salto de línea si es necesario */
+        word-wrap: break-word; /* Compatibilidad con navegadores más antiguos */
+        margin-bottom: auto; /* Empuja el resto del contenido hacia abajo */
+    }
+
+    .card-text {
+        margin-bottom: 4px; /* Asegura un pequeño espacio entre las líneas de texto */
     }
 
     .card a {
@@ -67,30 +78,37 @@
 
             function cargarProductos(termino) {
                 var url = termino ? '/api/Productos/buscar' : '/api/Productos/paginacion';
+
+                // Obtener el token desde el localStorage
+                var token = localStorage.getItem('token');
+
                 $.ajax({
                     url: url,
                     type: 'GET',
                     data: { termino: termino, pagina: pagina, cantidadPorPagina: cantidadPorPagina },
+                    headers: {
+                        'Authorization': 'Bearer ' + token  // Incluir el token en la cabecera de la solicitud
+                    },
                     success: function (response) {
                         var productosContainer = $("#productosContainer");
                         productosContainer.empty();
                         response.items.forEach(function (item) {
                             var productHtml = `
-                                            <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
-                                            <div class="card card-custom shadow-sm">
-                                                                                <a href="/Productos/ProductoDetallesAdmin/${item.productoId}">
-                                                            <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}" onerror="this.onerror=null; this.src='/images/folder.png';">
-                                                    <div class="card-body card-body-custom">
-                                                        <h5 class="card-title">${item.descripcion}</h5>
-                                                        <p class="card-text">${item.codigo}</p>
-                                                        <p class="card-text"><strong>Existencia:</strong> ${item.existencia}</p>
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <small class="text-muted">${item.marca}</small>
-                                                        </div>
+                                    <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                                        <div class="card card-custom shadow-sm">
+                                            <a href="/Productos/ProductoDetallesAdmin/${item.productoId}">
+                                                <img src="/images/${item.imagenURL}" class="card-img-top card-img-custom" alt="${item.descripcion}" onerror="this.onerror=null; this.src='/images/folder.png';">
+                                                <div class="card-body card-body-custom">
+                                                    <h5 class="card-title">${item.descripcion}</h5>
+                                                    <p class="card-text">${item.codigo}</p>
+                                                    <p class="card-text"><strong>Existencia:</strong> ${item.existencia}</p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-muted">${item.marca}</small>
                                                     </div>
-                                                </a>
-                                            </div>
-                                        </div>`;
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>`;
                             productosContainer.append(productHtml);
                         });
                         totalPaginas = response.totalPaginas;
@@ -107,18 +125,18 @@
                 paginationContainer.empty();
 
                 paginationContainer.append(`
-                                    <li class="page-item ${pagina === 1 ? 'disabled' : ''}">
-                                        <a class="page-link" href="#" id="prevPage">Anterior</a>
-                                    </li>
-                                `);
+                                            <li class="page-item ${pagina === 1 ? 'disabled' : ''}">
+                                                <a class="page-link" href="#" id="prevPage">Anterior</a>
+                                            </li>
+                                        `);
 
                 if (pagina > 4) {
                     paginationContainer.append(`
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" data-page="1">1</a>
-                                        </li>
-                                        <li class="page-item disabled"><span class="page-link">...</span></li>
-                                    `);
+                                                <li class="page-item">
+                                                    <a class="page-link" href="#" data-page="1">1</a>
+                                                </li>
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                            `);
                 }
 
                 var startPage = Math.max(1, pagina - 3);
@@ -126,28 +144,28 @@
 
                 for (var i = startPage; i <= endPage; i++) {
                     paginationContainer.append(`
-                                        <li class="page-item ${i === pagina ? 'active' : ''}">
-                                            <a class="page-link" href="#" data-page="${i}">${i}</a>
-                                        </li>
-                                    `);
+                                                <li class="page-item ${i === pagina ? 'active' : ''}">
+                                                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                                </li>
+                                            `);
                 }
 
                 if (endPage < totalPaginas - 1) {
                     paginationContainer.append(`
-                                        <li class="page-item disabled"><span class="page-link">...</span></li>
-                                        <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
-                                    `);
+                                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                                                <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
+                                            `);
                 } else if (endPage === totalPaginas - 1) {
                     paginationContainer.append(`
-                                        <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
-                                    `);
+                                                <li class="page-item"><a class="page-link" href="#" data-page="${totalPaginas}">${totalPaginas}</a></li>
+                                            `);
                 }
 
                 paginationContainer.append(`
-                                    <li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
-                                        <a class="page-link" href="#" id="nextPage">Siguiente</a>
-                                    </li>
-                                `);
+                                            <li class="page-item ${pagina === totalPaginas ? 'disabled' : ''}">
+                                                <a class="page-link" href="#" id="nextPage">Siguiente</a>
+                                            </li>
+                                        `);
             }
 
             $("#paginationContainer").on("click", ".page-link", function (e) {

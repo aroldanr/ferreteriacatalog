@@ -47,6 +47,7 @@ namespace ferreteria_catalog.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin,Colab")]
         [HttpGet("buscar")]
         public async Task<ActionResult<PaginacionResponse<ProductoDTO>>> BuscarProductos([FromQuery] string termino, int pagina = 1, int cantidadPorPagina = 10)
         {
@@ -69,6 +70,7 @@ namespace ferreteria_catalog.Controllers
             return Ok(response);
         }
 
+        [Authorize(Roles = "Admin,Colab")]
         [HttpGet("paginacion")]
         public async Task<ActionResult<PaginacionResponse<ProductoDTO>>> GetProductosPaginados([FromQuery] int pagina = 1, int cantidadPorPagina = 10)
         {
