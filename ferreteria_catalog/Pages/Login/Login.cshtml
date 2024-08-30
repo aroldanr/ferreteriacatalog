@@ -15,41 +15,99 @@
             font-weight: 300;
             font-size: 15px;
             line-height: 1.7;
-            background: #6a11cb;
-            /* Chrome 10-25, Safari 5.1-6 */
-            background: -webkit-linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1));
-            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-            background: linear-gradient(to right, rgba(106, 17, 203, 1), rgba(37, 117, 252, 1)) overflow-x: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
         }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .btn-primary {
+            background-color: #0062cc;
+            border-color: #0056b3;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+                border-color: #004085;
+            }
+
+        .form-control:focus {
+            border-color: #0062cc;
+            box-shadow: none;
+        }
+
+        h2 {
+            color: #333;
+            font-weight: bold;
+        }
+
+        .form-label {
+            color: #555;
+        }
+
+        .card-body .form-control {
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
+        }
+
+        .card-body .form-control-lg {
+            font-size: 1.25rem;
+        }
+
+        .form-outline {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+            .form-outline .form-label {
+                position: absolute;
+                top: -1.25rem;
+                left: 0.75rem;
+                background-color: #fff;
+                padding: 0 0.25rem;
+                font-size: 0.85rem;
+                color: #333;
+            }
     </style>
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body>
 
-    <div class="container py-5 h-100">
-        <div class="row d-flex justify-content-center align-items-center h-100">
+    <div class="container">
+        <div class="row d-flex justify-content-center align-items-center">
             <div class="col-12 col-md-8 col-lg-6 col-xl-5">
-                <div class="card bg-dark text-white" style="border-radius: 1rem;">
-                    <div class="card-body p-5 text-center">
+                <div class="card">
+                    <div class="card-body text-center">
 
                         <div class="mb-md-5 mt-md-4 pb-5">
 
-                            <h2 class="fw-bold mb-2 text-uppercase">Inicio de sesión</h2>
-                            <p class="text-white-50 mb-5">Por favor ingrese su usuario y contraseña!</p>
+                            <h2 class="fw-bold mb-2">Inicio de sesión</h2>
+                            <p class="mb-5">Por favor ingrese su usuario y contraseña!</p>
 
                             <div class="form-outline form-white mb-4">
-                                <input type="text" id="typeUsernameX" class="form-control form-control-lg" />
+                                <input type="text" id="typeUsernameX" class="form-control form-control-lg" required />
                                 <label class="form-label" for="typeUsernameX">Usuario</label>
                             </div>
 
                             <div class="form-outline form-white mb-4">
-                                <input type="password" id="typePasswordX" class="form-control form-control-lg" />
+                                <input type="password" id="typePasswordX" class="form-control form-control-lg" required />
                                 <label class="form-label" for="typePasswordX">Contraseña</label>
                             </div>
 
-                           @*  <p class="small mb-5 pb-lg-2"><a class="text-white-50" href="#!">Forgot password?</a></p> *@
-
-                            <button class="btn btn-outline-light btn-lg px-5" type="button" id="loginButton">Login</button>
+                            <button class="btn btn-primary btn-lg px-5" type="button" id="loginButton">Login</button>
 
                         </div>
 
@@ -66,7 +124,6 @@
             $('#loginButton').click(function () {
                 var username = $('#typeUsernameX').val();
                 var password = $('#typePasswordX').val();
-                debugger
                 $.ajax({
                     url: '/api/Auth/login',
                     type: 'POST',

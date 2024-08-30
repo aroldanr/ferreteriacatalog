@@ -1,0 +1,99 @@
+﻿@page "/Login/CreateUser"
+@{
+    ViewData["Title"] = "Crear Usuario";
+    Layout = "_AdminLayout"; // Utilizando el layout de administrador que tienes configurado
+}
+
+<h2>Crear Usuario</h2>
+
+<form id="createUserForm">
+    <div class="form-group">
+        <label for="nombreUsuario">Nombre de Usuario</label>
+        <input type="text" class="form-control" id="nombreUsuario" required />
+    </div>
+    <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input type="password" class="form-control" id="password" required />
+    </div>
+    <div class="form-group">
+        <label for="rolId">Rol</label>
+        <select class="form-control" id="rolId" required>
+            <option value="">Seleccione un rol</option>
+            <option value="1">Administrador</option>
+            <option value="2">Colaborador</option>
+            <!-- Puedes añadir más roles aquí -->
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Usuario</button>
+</form>
+
+<div id="responseMessage" class="alert d-none mt-3"></div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Obtener el token desde el localStorage
+            var token = localStorage.getItem('token');
+
+            // Configurar fetch para incluir el token en las solicitudes
+            function fetchWithToken(url, options) {
+                options = options || {};
+                options.headers = options.headers || {};
+                options.headers['Authorization'] = 'Bearer ' + token;
+                return fetch(url, options);
+            }
+
+            // Manejar el envío del formulario
+            $('#createUserForm').on('submit', function (event) {
+                event.preventDefault(); // Prevenir la recarga de la página
+
+                var nombreUsuario = $('#nombreUsuario').val().trim();
+                var password = $('#password').val().trim();
+                var rolId = $('#rolId').val();
+
+                // Validaciones
+                if (nombreUsuario === '') {
+                    alert('El campo "Nombre de Usuario" es obligatorio.');
+                    return;
+                }
+                if (password === '') {
+                    alert('El campo "Contraseña" es obligatorio.');
+                    return;
+                }
+                if (rolId === '') {
+                    alert('Debe seleccionar un rol.');
+                    return;
+                }
+
+                var usuarioData = {
+                    NombreUsuario: nombreUsuario,
+                    Password: password,
+                    RolId: parseInt(rolId, 10)
+                };
+
+                fetchWithToken('/api/Usuarios/Crear', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(usuarioData)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        var responseMessage = $('#responseMessage');
+                        if (data.success) {
+                            responseMessage.removeClass('d-none alert-danger').addClass('alert-success').text(data.message);
+                            $('#createUserForm')[0].reset(); // Resetear el formulario
+                        } else {
+                            responseMessage.removeClass('d-none alert-success').addClass('alert-danger').text(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al crear usuario:', error);
+                        $('#responseMessage').removeClass('d-none alert-success').addClass('alert-danger').text('Error al crear usuario. Inténtelo de nuevo.');
+                    });
+            });
+        });
+    </script>
+}

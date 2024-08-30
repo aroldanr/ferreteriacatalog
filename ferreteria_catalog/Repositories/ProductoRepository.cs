@@ -150,34 +150,43 @@ namespace ferreteria_catalog.Repositories
             // Dividir el término en palabras individuales
             var palabrasClave = termino.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-            // Construir la consulta
-            var query = from p in _context.Producto
-                        join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
-                        from m in marcaJoin.DefaultIfEmpty()
-                        join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
-                        from e in existenciaJoin.DefaultIfEmpty()
-                        where palabrasClave.All(palabra =>
-                                  (p.Descripcion != null && p.Descripcion.ToLower().Contains(palabra)) ||
-                                  (p.Codigo != null && p.Codigo.ToLower().Contains(palabra)) || 
-                                  (m.NombreMarca != null && m.NombreMarca.ToLower().Contains(palabra)))
-                        orderby p.ProductoId
-                        select new ProductoDTO
-                        {
-                            ProductoId = p.ProductoId,
-                            Codigo = p.Codigo ?? "N/A",
-                            Descripcion = p.Descripcion ?? "Descripción no disponible",
-                            UndxBulto = p.UndxBulto ?? 0,
-                            Marca = m != null ? m.NombreMarca : "Sin Marca",
-                            ImagenURL = p.ImagenURL ?? string.Empty,
-                            Existencia = e != null ? p.UndxBulto : 0
-                        };
+            // Construir la consulta de manera dinámica
+            var query = _context.Producto
+                .Join(_context.Marca, p => p.MarcaId, m => m.MarcaId, (p, m) => new { p, m })
+                .GroupJoin(_context.Existencia, pm => pm.p.ProductoId, e => e.ProductoId, (pm, e) => new { pm.p, pm.m, e = e.FirstOrDefault() })
+                .AsQueryable();
 
-            // Aplicar paginación
-            return await query
+            if (palabrasClave.Length > 0)
+            {
+                foreach (var palabra in palabrasClave)
+                {
+                    var palabraLower = palabra.ToLower();
+                    query = query.Where(pm =>
+                        (pm.p.Descripcion != null && pm.p.Descripcion.ToLower().Contains(palabraLower)) ||
+                        (pm.p.Codigo != null && pm.p.Codigo.ToLower().Contains(palabraLower)) ||
+                        (pm.m.NombreMarca != null && pm.m.NombreMarca.ToLower().Contains(palabraLower)));
+                }
+            }
+
+            var result = await query
+                .OrderBy(p => p.p.ProductoId)
                 .Skip((pagina - 1) * cantidadPorPagina)
                 .Take(cantidadPorPagina)
+                .Select(pm => new ProductoDTO
+                {
+                    ProductoId = pm.p.ProductoId,
+                    Codigo = pm.p.Codigo ?? "N/A",
+                    Descripcion = pm.p.Descripcion ?? "Descripción no disponible",
+                    UndxBulto = pm.p.UndxBulto ?? 0,
+                    Marca = pm.m != null ? pm.m.NombreMarca : "Sin Marca",
+                    ImagenURL = pm.p.ImagenURL ?? string.Empty,
+                    Existencia = pm.p.UndxBulto ?? 0,
+                })
                 .ToListAsync();
+
+            return result;
         }
+
         public async Task<ProductoDTO> GetProductoByIdAsync(int id)
         {
             var query = from p in _context.Producto.AsNoTracking()

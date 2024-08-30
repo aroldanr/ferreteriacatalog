@@ -40,6 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Pages\Login\CreateUser.cshtml" />
 	  <None Remove="Pages\Login\Login.cshtml" />
 	  <None Remove="Pages\Productos\CargarImagenesLote.cshtml" />
 	  <None Remove="Pages\Productos\Index.cshtml" />

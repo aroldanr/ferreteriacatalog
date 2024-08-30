@@ -53,6 +53,9 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IModulosRepository, ModulosRepository>();
 builder.Services.AddScoped<IModuloService, ModuloService>();
 
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
 // Add controllers and Razor Pages
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
