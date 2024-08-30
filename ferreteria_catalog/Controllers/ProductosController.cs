@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System.Text.RegularExpressions;
 
 namespace ferreteria_catalog.Controllers
 {
@@ -114,7 +115,7 @@ namespace ferreteria_catalog.Controllers
                 return NotFound("Producto no encontrado.");
             }
 
-            var fileName = $"{codigo}_{Path.GetFileNameWithoutExtension(nuevaImagen.FileName)}{Path.GetExtension(nuevaImagen.FileName)}";
+            var fileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
             var filePath = Path.Combine("wwwroot/images", fileName);
 
             // Eliminar la imagen existente si ya existe
@@ -126,17 +127,15 @@ namespace ferreteria_catalog.Controllers
             // Procesar y comprimir la imagen antes de guardarla
             using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
             {
-                // Ajustar calidad de la imagen (ej. 75%)
                 var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
                 {
-                    Quality = 75 // Puedes ajustar la calidad aquí
+                    Quality = 75
                 };
 
-                // Redimensionar la imagen si es necesario (opcional)
                 image.Mutate(x => x.Resize(new ResizeOptions
                 {
                     Mode = ResizeMode.Max,
-                    Size = new Size(800, 800) // Ajusta el tamaño según tus necesidades
+                    Size = new Size(800, 800)
                 }));
 
                 await image.SaveAsync(filePath, encoder);
@@ -158,40 +157,59 @@ namespace ferreteria_catalog.Controllers
                 return BadRequest("No se ha subido ninguna imagen.");
             }
 
+            // Expresión regular para encontrar el patrón ##-####
+            var regex = new Regex(@"\d{2}-\d{4}");
+
             foreach (var nuevaImagen in imagenes)
             {
-                var fileName = nuevaImagen.FileName;
-                var filePath = Path.Combine("wwwroot/images", fileName);
+                var fileName = Path.GetFileNameWithoutExtension(nuevaImagen.FileName);
 
-                // Eliminar la imagen existente si ya existe
+                // Buscar el código usando la expresión regular
+                var match = regex.Match(fileName);
+                var codigo = match.Value;
+
+                if (string.IsNullOrEmpty(codigo))
+                {
+                    // Si no se encuentra un código válido, pasar a la siguiente imagen
+                    continue;
+                }
+
+                var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
+                if (producto == null)
+                {
+                    continue;
+                }
+
+                var newFileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
+                var filePath = Path.Combine("wwwroot/images", newFileName);
+
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);
                 }
 
-                // Procesar y comprimir la imagen antes de guardarla
                 using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
                 {
-                    // Ajustar calidad de la imagen (ej. 75%)
                     var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
                     {
-                        Quality = 75 // Puedes ajustar la calidad aquí
+                        Quality = 75
                     };
 
-                    // Redimensionar la imagen si es necesario (opcional)
                     image.Mutate(x => x.Resize(new ResizeOptions
                     {
                         Mode = ResizeMode.Max,
-                        Size = new Size(800, 800) // Ajusta el tamaño según tus necesidades
+                        Size = new Size(800, 800)
                     }));
 
                     await image.SaveAsync(filePath, encoder);
                 }
+
+                producto.FirstOrDefault().ImagenURL = newFileName;
+                await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
             }
 
             return Ok(new { mensaje = "Imágenes subidas correctamente." });
         }
-
 
     }
 }
