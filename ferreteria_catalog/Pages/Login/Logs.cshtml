@@ -1,0 +1,47 @@
+﻿@page "/Login/Logs"
+@{
+    ViewData["Title"] = "Logs";
+    Layout = "_AdminLayout";
+}
+
+<h2>Descargar Logs</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre del Log</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody id="logFilesTable"></tbody>
+</table>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        debugger
+        $(document).ready(function () {
+            debugger
+            // Cargar lista de logs al cargar la página
+            $.get("/api/Auth/listar", function (data) {
+                if (data && data.length > 0) {
+                    data.forEach(function (logFile) {
+                        $("#logFilesTable").append(
+                            `<tr>
+                                        <td>${logFile}</td>
+                                        <td><button class="btn btn-primary" onclick="descargarLog('${logFile}')">Descargar</button></td>
+                                    </tr>`
+                        );
+                    });
+                } else {
+                    $("#logFilesTable").append("<tr><td colspan='2'>No hay archivos de log disponibles.</td></tr>");
+                }
+            });
+
+            // Función para descargar log
+            window.descargarLog = function (logFileName) {
+                window.location.href = `/api/Auth/descargar/${logFileName}`;
+            }
+        });
+    </script>
+}

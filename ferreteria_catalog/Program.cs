@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
 using Serilog.Events;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,12 @@ builder.Host.UseSerilog();
 // Configurar logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // 50 MB
+});
+
 
 // Configuración de Razor Pages con convenciones de rutas
 builder.Services.AddRazorPages(options =>
@@ -133,8 +141,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "images")),
+    RequestPath = "/images"
+});
 
+// Para la carpeta bootstrap (o cualquier otra carpeta estática)
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/bootstrap")),
+    RequestPath = "/bootstrap"
+});
 
 
 app.UseAuthentication();

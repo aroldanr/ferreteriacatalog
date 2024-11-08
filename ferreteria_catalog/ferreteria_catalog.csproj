@@ -42,6 +42,7 @@
 	<ItemGroup>
 	  <None Remove="Pages\Login\CreateUser.cshtml" />
 	  <None Remove="Pages\Login\Login.cshtml" />
+	  <None Remove="Pages\Login\Logs.cshtml" />
 	  <None Remove="Pages\Productos\CargarImagenesLote.cshtml" />
 	  <None Remove="Pages\Productos\Index.cshtml" />
 	  <None Remove="Pages\Productos\ProductoDetalles.cshtml" />
@@ -53,6 +54,19 @@
 
 	<ItemGroup>
 	  <UpToDateCheckInput Remove="Pages\Productos\ProductoDetalles.cshtml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="images\09-1006.jpg" />
+	  <Content Include="images\09-1008.png" />
+	  <Content Include="images\09-1009.jpg" />
+	  <Content Include="images\09-1010.jpg" />
+	  <Content Include="images\09-1087.jpg" />
+	  <Content Include="images\1003.jpg" />
+	  <Content Include="images\1003.png" />
+	  <Content Include="images\1004.png" />
+	  <Content Include="images\ADHESIVOUNECOL.jpg" />
+	  <Content Include="images\folder.png" />
 	</ItemGroup>
 
 </Project>

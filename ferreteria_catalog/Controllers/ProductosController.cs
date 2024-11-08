@@ -116,7 +116,7 @@ namespace ferreteria_catalog.Controllers
             }
 
             var fileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
-            var filePath = Path.Combine("wwwroot/images", fileName);
+            var filePath = Path.Combine("images", fileName);
 
             // Eliminar la imagen existente si ya existe
             if (System.IO.File.Exists(filePath))
@@ -127,18 +127,39 @@ namespace ferreteria_catalog.Controllers
             // Procesar y comprimir la imagen antes de guardarla
             using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
             {
-                var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                var extension = Path.GetExtension(nuevaImagen.FileName).ToLower();
+                if (extension == ".png")
                 {
-                    Quality = 75
-                };
+                    // Si es PNG, preservar la transparencia y guardar como PNG
+                    var encoder = new SixLabors.ImageSharp.Formats.Png.PngEncoder
+                    {
+                        CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.DefaultCompression
+                    };
 
-                image.Mutate(x => x.Resize(new ResizeOptions
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Mode = ResizeMode.Max,
+                        Size = new Size(800, 800)
+                    }));
+
+                    await image.SaveAsync(filePath, encoder);
+                }
+                else
                 {
-                    Mode = ResizeMode.Max,
-                    Size = new Size(800, 800)
-                }));
+                    var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                    {
+                        Quality = 75
+                    };
 
-                await image.SaveAsync(filePath, encoder);
+                    image.Mutate(x => x.Resize(new ResizeOptions
+                    {
+                        Mode = ResizeMode.Max,
+                        Size = new Size(800, 800)
+                    }));
+
+                    await image.SaveAsync(filePath, encoder);
+                }
+
             }
 
             // Actualizar la columna ImagenURL en la tabla Producto
@@ -181,7 +202,7 @@ namespace ferreteria_catalog.Controllers
                 }
 
                 var newFileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
-                var filePath = Path.Combine("wwwroot/images", newFileName);
+                var filePath = Path.Combine("images", newFileName);
 
                 if (System.IO.File.Exists(filePath))
                 {
@@ -190,18 +211,39 @@ namespace ferreteria_catalog.Controllers
 
                 using (var image = await Image.LoadAsync(nuevaImagen.OpenReadStream()))
                 {
-                    var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                    var extension = Path.GetExtension(nuevaImagen.FileName).ToLower();
+                    if (extension == ".png")
                     {
-                        Quality = 75
-                    };
+                        // Si es PNG, preservar la transparencia y guardar como PNG
+                        var encoder = new SixLabors.ImageSharp.Formats.Png.PngEncoder
+                        {
+                            CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.DefaultCompression
+                        };
 
-                    image.Mutate(x => x.Resize(new ResizeOptions
+                        image.Mutate(x => x.Resize(new ResizeOptions
+                        {
+                            Mode = ResizeMode.Max,
+                            Size = new Size(800, 800)
+                        }));
+
+                        await image.SaveAsync(filePath, encoder);
+                    }
+                    else 
                     {
-                        Mode = ResizeMode.Max,
-                        Size = new Size(800, 800)
-                    }));
+                        var encoder = new SixLabors.ImageSharp.Formats.Jpeg.JpegEncoder
+                        {
+                            Quality = 75
+                        };
 
-                    await image.SaveAsync(filePath, encoder);
+                        image.Mutate(x => x.Resize(new ResizeOptions
+                        {
+                            Mode = ResizeMode.Max,
+                            Size = new Size(800, 800)
+                        }));
+
+                        await image.SaveAsync(filePath, encoder);
+                    }
+
                 }
 
                 producto.FirstOrDefault().ImagenURL = newFileName;
