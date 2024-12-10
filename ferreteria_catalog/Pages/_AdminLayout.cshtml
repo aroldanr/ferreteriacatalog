@@ -57,10 +57,25 @@
             &copy; <script>document.write(new Date().getFullYear())</script> - Ferretería - <a href="/Privacy">Privacy</a>
         </div>
     </footer>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-KyZXEAg3QhqLMpG8r+Knujsl5+5hb7ie4y3Md5FL2XRX5FrxJx58bdrFzYgYqV1c" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+            crossorigin="anonymous"></script>
+
     <script src="~/bootstrap/js/bootstrap.js"></script>
     @RenderSection("Scripts", required: false)
     <script>
+            (function () {
+                const originalConsoleError = console.error;
+                console.error = function (...args) {
+                    const message = args[0];
+                    if (typeof message === 'string' && message.includes('Failed to load resource') && message.includes('/images/')) {
+                        // Filtramos este error específico y no hacemos nada
+                    } else {
+                        // Llamamos al método original para otros errores
+                        originalConsoleError.apply(console, args);
+                    }
+                };
+            })();
         $(document).ready(function () {
             const token = localStorage.getItem('token');
 
