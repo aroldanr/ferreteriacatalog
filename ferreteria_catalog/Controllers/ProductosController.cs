@@ -1,10 +1,12 @@
-﻿using ferreteria_catalog.Dtos;
+﻿using ferreteria_catalog.Data;
+using ferreteria_catalog.Dtos;
 using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
+using System.Data.Entity;
 using System.Text.RegularExpressions;
 
 namespace ferreteria_catalog.Controllers
@@ -15,11 +17,15 @@ namespace ferreteria_catalog.Controllers
     {
         private readonly IProductoService _productoService;
         private readonly ILogger<ProductosController> _logger;
+        private readonly AppDbContext _context;
 
-        public ProductosController(IProductoService productoService, ILogger<ProductosController> logger)
+        public ProductosController(IProductoService productoService,
+            ILogger<ProductosController> logger,
+            AppDbContext context)
         {
             _productoService = productoService;
             _logger = logger;
+            _context = context;
         }
 
         [Authorize(Roles = "Admin,Colab")]
@@ -109,11 +115,11 @@ namespace ferreteria_catalog.Controllers
                 return BadRequest("No se ha subido ninguna imagen.");
             }
 
-            var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
-            if (producto == null)
-            {
-                return NotFound("Producto no encontrado.");
-            }
+            //var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
+            //if (producto == null)
+            //{
+            //    return NotFound("Producto no encontrado.");
+            //}
 
             var fileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
             var filePath = Path.Combine("images", fileName);
@@ -163,8 +169,8 @@ namespace ferreteria_catalog.Controllers
             }
 
             // Actualizar la columna ImagenURL en la tabla Producto
-            producto.FirstOrDefault().ImagenURL = fileName;
-            await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
+           // producto.FirstOrDefault().ImagenURL = fileName;
+            //await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
 
             return Ok(new { imagenURL = fileName });
         }
@@ -195,11 +201,11 @@ namespace ferreteria_catalog.Controllers
                     continue;
                 }
 
-                var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
-                if (producto == null)
-                {
-                    continue;
-                }
+                //var producto = await _productoService.BuscarProductosPorCodigoAsync(codigo);
+                //if (producto == null)
+                //{
+                //    continue;
+                //}
 
                 var newFileName = $"{codigo}{Path.GetExtension(nuevaImagen.FileName)}"; // Guardar solo con el código
                 var filePath = Path.Combine("images", newFileName);
@@ -246,12 +252,62 @@ namespace ferreteria_catalog.Controllers
 
                 }
 
-                producto.FirstOrDefault().ImagenURL = newFileName;
-                await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
+                //producto.FirstOrDefault().ImagenURL = newFileName;
+                //await _productoService.ActualizarProductoAsync(producto.FirstOrDefault());
             }
 
             return Ok(new { mensaje = "Imágenes subidas correctamente." });
         }
 
+        [HttpPost("ProcesarImagenes")]
+        public async Task<IActionResult> ProcesarImagenes()
+        {
+            try
+            {
+                // Ruta donde se almacenan las imágenes en la raíz del proyecto
+                string rutaImagenes = Path.Combine(Directory.GetCurrentDirectory(), "images");
+
+                // Obtener todos los archivos en la carpeta de imágenes
+                var archivos = Directory.GetFiles(rutaImagenes);
+                int totalArchivos = archivos.Length;
+                int tamanoLote = 500; // Define el tamaño del lote
+                int procesados = 0;
+
+                // Procesar las imágenes en lotes
+                while (procesados < totalArchivos)
+                {
+                    var loteActual = archivos.Skip(procesados).Take(tamanoLote).ToList();
+
+                    foreach (var archivo in loteActual)
+                    {
+                        var nombreArchivo = Path.GetFileNameWithoutExtension(archivo); // Nombre del archivo sin extensión
+
+                        // Buscar el producto por código
+                        var producto = await _context.Producto.FirstOrDefaultAsync(p => p.Codigo == nombreArchivo);
+
+                        if (producto != null)
+                        {
+                            // Actualizar la URL de la imagen en la base de datos
+                            producto.ImagenURL = Path.Combine("images", Path.GetFileName(archivo));
+                        }
+                    }
+
+                    // Guardar cambios en la base de datos después de cada lote
+                    await _context.SaveChangesAsync();
+                    procesados += loteActual.Count;
+
+                    // Log para monitorear progreso en la consola del servidor
+                    Console.WriteLine($"Lote procesado: {procesados}/{totalArchivos}");
+                }
+
+                return Ok(new { mensaje = "Proceso completado", totalImagenesProcesadas = procesados });
+            }
+            catch (Exception ex)
+            {
+                // Manejo de errores
+                Console.WriteLine("Error al procesar imágenes: " + ex.Message);
+                return StatusCode(500, new { mensaje = "Error durante el procesamiento", detalle = ex.Message });
+            }
+        }
     }
 }

@@ -69,7 +69,11 @@ namespace ferreteria_catalog.Services
             var producto = await _productoRepository.GetProductoByIdAsync(id);
             return producto;
         }
-
+        public async Task ProcesarImagenes(List<string> imagenesNombre)
+        {
+            await _productoRepository.ProcesarImagenes(imagenesNombre);
+            
+        }
         public async Task ActualizarProductoAsync(ProductoDTO productoDto)
         {
             //var productoDtoDb = await _productoRepository.GetProductoByIdAsync(productoDto.ProductoId);

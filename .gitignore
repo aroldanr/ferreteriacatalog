@@ -123,3 +123,6 @@ external_tool/Settings
 
 # Others
 [Tt]emp/
+
+appsettings.json
+appsettings.Development.json

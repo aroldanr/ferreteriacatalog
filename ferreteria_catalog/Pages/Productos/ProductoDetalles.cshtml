@@ -43,7 +43,7 @@
                     $('#marca').text(data.marca);
                     $('#existencia').text(data.existencia);
                     $('#descripcion').text(data.descripcion);
-                    $('#imagen').attr('src', '/images/' + data.imagenURL);
+                    $('#imagen').attr('src', '/images/' + data.codigo + '.jpg');
                     $('#imagen').attr('alt', data.descripcion);
                 },
                 error: function (error) {

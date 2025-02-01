@@ -105,12 +105,12 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<IEnumerable<ProductoDTO>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
         {
-            var query = from p in _context.Producto
+            var query = from p in _context.Producto.Where(p => p.UndxBulto > 0)
                         join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
                         from m in marcaJoin.DefaultIfEmpty()
                         join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
-                        from e in existenciaJoin.DefaultIfEmpty()
-                        orderby p.ProductoId
+                        from e in existenciaJoin.DefaultIfEmpty() where p.UndxBulto > 0
+                        orderby p.ImagenURL != null descending, p.ProductoId
                         select new ProductoDTO
                         {
                             ProductoId = p.ProductoId,
@@ -132,7 +132,7 @@ namespace ferreteria_catalog.Repositories
 
         public async Task<int> ObtenerTotalProductosAsync()
         {
-            return await _context.Producto.CountAsync();
+            return await _context.Producto.Where(p => p.UndxBulto > 0).CountAsync();
         }
 
         public async Task<int> ObtenerTotalProductosPorTerminoAsync(string termino)
@@ -169,7 +169,8 @@ namespace ferreteria_catalog.Repositories
             }
 
             var result = await query
-                .OrderBy(p => p.p.ProductoId)
+                .OrderByDescending(p => p.p.ImagenURL != null) // Prioriza los productos con imagen
+                .ThenBy(p => p.p.ProductoId)
                 .Skip((pagina - 1) * cantidadPorPagina)
                 .Take(cantidadPorPagina)
                 .Select(pm => new ProductoDTO
@@ -221,6 +222,19 @@ namespace ferreteria_catalog.Repositories
                 throw;
             }
             
+        }
+
+        public async Task ProcesarImagenes(List<string> imagenesNombre)
+        {
+            try
+            {                
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
         }
     }
 }

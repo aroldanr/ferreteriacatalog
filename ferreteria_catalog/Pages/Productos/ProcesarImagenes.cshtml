@@ -1,0 +1,29 @@
+﻿@page "/ProcesarImagenes"
+@{
+    ViewData["Title"] = "Cargar Imágenes por Lote";
+    Layout = "_AdminLayout";
+}
+<div>
+    <h3>Procesar imágenes</h3>
+    <button id="procesarButton">Iniciar Proceso</button>
+    <div id="progreso" style="margin-top: 10px;">Esperando...</div>
+</div>
+
+<script>
+    document.getElementById('procesarButton').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/api/Productos/ProcesarImagenes', {
+                method: 'POST'
+            });
+
+            if (response.ok) {
+                const resultado = await response.json();
+                document.getElementById('progreso').innerText = `Proceso completado: ${resultado.totalImagenesProcesadas} imágenes procesadas.`;
+            } else {
+                throw new Error('Error durante el proceso');
+            }
+        } catch (error) {
+            document.getElementById('progreso').innerText = `Error: ${error.message}`;
+        }
+    });
+</script>
