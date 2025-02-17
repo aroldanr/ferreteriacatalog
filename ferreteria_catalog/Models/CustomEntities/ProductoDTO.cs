@@ -10,5 +10,6 @@
         public string? ImagenURL { get; set; }
         public int? Existencia { get; set; }
         public int? MarcaId { get; set; }
+        public int? TotalItems { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using ferreteria_catalog.Data;
+﻿using ferreteria_catalog.Comunication;
+using ferreteria_catalog.Data;
 using ferreteria_catalog.Models;
 using ferreteria_catalog.Models.CustomEntities;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ namespace ferreteria_catalog.Repositories
                 UndxBulto = p.UndxBulto,
                 Marca = p.Marca.NombreMarca,
                 ImagenURL = p.ImagenURL,
-                Existencia = p != null ? p.UndxBulto : 0
+                Existencia = p != null ? p.Existencia.Stock : 0
             }).ToList();
         }
 
@@ -51,7 +52,7 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
                             Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
                             ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
-                            Existencia = p != null ? p.UndxBulto : 0,  // Manejo de nulos para Existencia
+                            Existencia = p != null ? e.Stock : 0,  // Manejo de nulos para Existencia
                             MarcaId = p.MarcaId
                         };
 
@@ -87,7 +88,7 @@ namespace ferreteria_catalog.Repositories
                 ProductoId = p.ProductoId,
                 Codigo = p.Codigo,
                 Descripcion = p.Descripcion,
-                UndxBulto = p.UndxBulto,
+                UndxBulto = p.Existencia.Stock,
                 Marca = p.Marca.NombreMarca,
                 ImagenURL = p.ImagenURL,
                 Existencia = existencias.ContainsKey(p.ProductoId) ? existencias[p.ProductoId] : 0
@@ -103,14 +104,15 @@ namespace ferreteria_catalog.Repositories
             }
         }
 
-        public async Task<IEnumerable<ProductoDTO>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
+        public async Task<Response<IEnumerable<ProductoDTO>>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
         {
-            var query = from p in _context.Producto.Where(p => p.UndxBulto > 0)
+            var response = new Response<IEnumerable<ProductoDTO>>();
+            var query = from p in _context.Producto
                         join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
                         from m in marcaJoin.DefaultIfEmpty()
                         join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
-                        from e in existenciaJoin.DefaultIfEmpty() where p.UndxBulto > 0
-                        orderby p.ImagenURL != null descending, p.ProductoId
+                        from e in existenciaJoin.DefaultIfEmpty() where e.Stock > 0
+                        orderby p.Descripcion ascending, p.ProductoId
                         select new ProductoDTO
                         {
                             ProductoId = p.ProductoId,
@@ -122,17 +124,21 @@ namespace ferreteria_catalog.Repositories
                             Existencia = p != null ? p.UndxBulto : 0 // Manejo de nulos para Existencia
                         };
 
-            return await query
+            response.TotalCount = query.Count();
+
+            response.Data = await query
                 .Skip((pagina - 1) * cantidadPorPagina)
                 .Take(cantidadPorPagina)
                 .ToListAsync();
+
+            return response;
         }
 
 
 
         public async Task<int> ObtenerTotalProductosAsync()
         {
-            return await _context.Producto.Where(p => p.UndxBulto > 0).CountAsync();
+            return await _context.Producto.Where(p => p.ImagenURL != null).CountAsync();
         }
 
         public async Task<int> ObtenerTotalProductosPorTerminoAsync(string termino)
@@ -142,8 +148,9 @@ namespace ferreteria_catalog.Repositories
                 .CountAsync();
         }
 
-        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
+        public async Task<Response<IEnumerable<ProductoDTO>>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
         {
+            var response = new Response<IEnumerable<ProductoDTO>>();
             // Normalizar el término de búsqueda a minúsculas
             termino = termino?.ToLower() ?? string.Empty;
 
@@ -181,11 +188,14 @@ namespace ferreteria_catalog.Repositories
                     UndxBulto = pm.p.UndxBulto ?? 0,
                     Marca = pm.m != null ? pm.m.NombreMarca : "Sin Marca",
                     ImagenURL = pm.p.ImagenURL ?? string.Empty,
-                    Existencia = pm.p.UndxBulto ?? 0,
+                    Existencia = pm.e.Stock,
                 })
                 .ToListAsync();
 
-            return result;
+            response.TotalCount = query.Count();
+            response.Data = result;
+
+            return response;
         }
 
         public async Task<ProductoDTO> GetProductoByIdAsync(int id)
@@ -204,7 +214,7 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
                             Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
                             ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
-                            Existencia = p != null ? p.UndxBulto : 0,  // Manejo de nulos para Existencia
+                            Existencia = p != null ? e.Stock : 0,  // Manejo de nulos para Existencia
                             MarcaId = p.MarcaId
                         };
 

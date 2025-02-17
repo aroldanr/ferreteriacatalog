@@ -4,9 +4,9 @@ using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using System.Data.Entity;
 using System.Text.RegularExpressions;
 
 namespace ferreteria_catalog.Controllers
@@ -64,12 +64,12 @@ namespace ferreteria_catalog.Controllers
             }
 
             var productos = await _productoService.BuscarProductosPorTerminoYPaginacionAsync(termino, pagina, cantidadPorPagina);
-            var totalProductos = await _productoService.ObtenerTotalProductosPorTerminoAsync(termino);
+            var totalProductos = productos.TotalCount;
             var totalPaginas = (int)Math.Ceiling((double)totalProductos / cantidadPorPagina);
 
             var response = new PaginacionResponse<ProductoDTO>
             {
-                Items = productos,
+                Items = productos.Data,
                 PaginaActual = pagina,
                 TotalPaginas = totalPaginas
             };
@@ -82,12 +82,12 @@ namespace ferreteria_catalog.Controllers
         public async Task<ActionResult<PaginacionResponse<ProductoDTO>>> GetProductosPaginados([FromQuery] int pagina = 1, int cantidadPorPagina = 10)
         {
             var productos = await _productoService.ObtenerProductosPaginadosAsync(pagina, cantidadPorPagina);
-            var totalProductos = await _productoService.ObtenerTotalProductosAsync();
+            var totalProductos = productos.TotalCount;
             var totalPaginas = (int)Math.Ceiling((double)totalProductos / cantidadPorPagina);
 
             var response = new PaginacionResponse<ProductoDTO>
             {
-                Items = productos,
+                Items = productos.Data,
                 PaginaActual = pagina,
                 TotalPaginas = totalPaginas
             };
@@ -288,7 +288,7 @@ namespace ferreteria_catalog.Controllers
                         if (producto != null)
                         {
                             // Actualizar la URL de la imagen en la base de datos
-                            producto.ImagenURL = Path.Combine("images", Path.GetFileName(archivo));
+                            producto.ImagenURL = nombreArchivo;
                         }
                     }
 

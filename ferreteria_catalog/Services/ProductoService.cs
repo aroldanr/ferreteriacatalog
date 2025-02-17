@@ -1,4 +1,5 @@
-﻿using ferreteria_catalog.Models;
+﻿using ferreteria_catalog.Comunication;
+using ferreteria_catalog.Models;
 using ferreteria_catalog.Models.CustomEntities;
 using ferreteria_catalog.Repositories;
 
@@ -44,7 +45,7 @@ namespace ferreteria_catalog.Services
             await _productoRepository.AddStockAsync(id, cantidad);
         }
 
-        public async Task<IEnumerable<ProductoDTO>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
+        public async Task<Response<IEnumerable<ProductoDTO>>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina)
         {
             return await _productoRepository.ObtenerProductosPaginadosAsync(pagina, cantidadPorPagina);
         }
@@ -59,7 +60,7 @@ namespace ferreteria_catalog.Services
             return await _productoRepository.ObtenerTotalProductosPorTerminoAsync(termino);
         }
 
-        public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
+        public async Task<Response<IEnumerable<ProductoDTO>>> BuscarProductosPorTerminoYPaginacionAsync(string termino, int pagina, int cantidadPorPagina)
         {
             return await _productoRepository.BuscarProductosPorTerminoYPaginacionAsync(termino, pagina, cantidadPorPagina);
         }
