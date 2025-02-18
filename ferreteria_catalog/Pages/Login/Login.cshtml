@@ -120,10 +120,30 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript">
-        $(document).ready(function () {
+               $(document).ready(function () {
+            // Evento click en el botón de login
             $('#loginButton').click(function () {
+                iniciarSesion();
+            });
+
+            // Detectar la tecla Enter en el input de usuario o contraseña en móviles y PC
+            $('#typeUsernameX, #typePasswordX').on("keydown", function (event) {
+                if (event.key === "Enter" || event.keyCode === 13) {
+                    event.preventDefault(); // Evita que se recargue la página o se envíe el formulario
+                    iniciarSesion();
+                    return false; // Asegura que el teclado no se cierre en móviles
+                }
+            });
+
+            function iniciarSesion() {
                 var username = $('#typeUsernameX').val();
                 var password = $('#typePasswordX').val();
+
+                if (!username || !password) {
+                    alert('Por favor, ingrese su usuario y contraseña.');
+                    return;
+                }
+
                 $.ajax({
                     url: '/api/Auth/login',
                     type: 'POST',
@@ -131,14 +151,15 @@
                     success: function (response) {
                         localStorage.setItem('token', response.token);
                         localStorage.setItem('username', username);
-                        window.location.href = "/Productos/ProductosAdmin"; // Redirigir a la página de productos después de un login exitoso
+                        window.location.href = "/Productos/ProductosAdmin"; // Redirigir después del login exitoso
                     },
                     error: function (error) {
                         console.error('Error al iniciar sesión:', error);
                         alert('Credenciales incorrectas. Por favor, inténtelo de nuevo.');
                     }
                 });
-            });
+            }
         });
+
     </script>
 </body>

@@ -108,10 +108,9 @@ namespace ferreteria_catalog.Repositories
         {
             var response = new Response<IEnumerable<ProductoDTO>>();
             var query = from p in _context.Producto
-                        join m in _context.Marca on p.MarcaId equals m.MarcaId into marcaJoin
-                        from m in marcaJoin.DefaultIfEmpty()
-                        join e in _context.Existencia on p.ProductoId equals e.ProductoId into existenciaJoin
-                        from e in existenciaJoin.DefaultIfEmpty() where e.Stock > 0
+                        join m in _context.Marca on p.MarcaId equals m.MarcaId
+                        join e in _context.Existencia on p.ProductoId equals e.ProductoId
+                        where e.Stock > 0
                         orderby p.Descripcion ascending, p.ProductoId
                         select new ProductoDTO
                         {
@@ -160,7 +159,7 @@ namespace ferreteria_catalog.Repositories
             // Construir la consulta de manera dinámica
             var query = _context.Producto
                 .Join(_context.Marca, p => p.MarcaId, m => m.MarcaId, (p, m) => new { p, m })
-                .GroupJoin(_context.Existencia, pm => pm.p.ProductoId, e => e.ProductoId, (pm, e) => new { pm.p, pm.m, e = e.FirstOrDefault() })
+                .GroupJoin(_context.Existencia.Where(x => x.Stock != null), pm => pm.p.ProductoId, e => e.ProductoId, (pm, e) => new { pm.p, pm.m, e = e.FirstOrDefault() })
                 .AsQueryable();
 
             if (palabrasClave.Length > 0)
@@ -174,6 +173,8 @@ namespace ferreteria_catalog.Repositories
                         (pm.m.NombreMarca != null && pm.m.NombreMarca.ToLower().Contains(palabraLower)));
                 }
             }
+            //se filtra para traer solo productos con existencia
+            query = query.Where(x => x.e.Stock != null);
 
             var result = await query
                 .OrderByDescending(p => p.p.ImagenURL != null) // Prioriza los productos con imagen
