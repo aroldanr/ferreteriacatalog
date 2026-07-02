@@ -120,7 +120,7 @@ namespace ferreteria_catalog.Repositories
                             UndxBulto = p.UndxBulto ?? 0,  // Manejo de nulos para UndxBulto
                             Marca = m != null ? m.NombreMarca : "Sin Marca",  // Manejo de nulos para Marca
                             ImagenURL = p.ImagenURL ?? string.Empty,  // Manejo de nulos para ImagenURL
-                            Existencia = p != null ? p.UndxBulto : 0 // Manejo de nulos para Existencia
+                            Existencia = p != null ? e.Stock : 0 // Manejo de nulos para Existencia
                         };
 
             response.TotalCount = query.Count();
