@@ -81,10 +81,47 @@
                 font-size: 0.85rem;
                 color: #333;
             }
+
+        .loader-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.82);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1050;
+            backdrop-filter: blur(2px);
+        }
+
+        .loader-overlay.active {
+            display: flex;
+        }
+
+        .loader-card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: #333;
+        }
+
+        .spinner-border-sm {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
     </style>
 </head>
 
 <body>
+    <div id="loaderOverlay" class="loader-overlay" aria-live="polite" aria-hidden="true">
+        <div class="loader-card">
+            <div class="spinner-border text-primary spinner-border-sm" role="status" aria-hidden="true"></div>
+            <span>Iniciando sesión...</span>
+        </div>
+    </div>
 
     <div class="container">
         <div class="row d-flex justify-content-center align-items-center">
@@ -107,7 +144,9 @@
                                 <label class="form-label" for="typePasswordX">Contraseña</label>
                             </div>
 
-                            <button class="btn btn-primary btn-lg px-5" type="button" id="loginButton">Login</button>
+                            <button class="btn btn-primary btn-lg px-5" type="button" id="loginButton">
+                                <span id="loginButtonText">Login</span>
+                            </button>
 
                         </div>
 
@@ -120,7 +159,17 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript">
-               $(document).ready(function () {
+        $(document).ready(function () {
+            var loginEnProceso = false;
+
+            function establecerCargando(activo) {
+                loginEnProceso = activo;
+                $('#loaderOverlay').toggleClass('active', activo).attr('aria-hidden', !activo);
+                $('#loginButton').prop('disabled', activo);
+                $('#typeUsernameX, #typePasswordX').prop('disabled', activo);
+                $('#loginButtonText').text(activo ? 'Validando...' : 'Login');
+            }
+
             // Evento click en el botón de login
             $('#loginButton').click(function () {
                 iniciarSesion();
@@ -128,6 +177,11 @@
 
             // Detectar la tecla Enter en el input de usuario o contraseña en móviles y PC
             $('#typeUsernameX, #typePasswordX').on("keydown", function (event) {
+                if (loginEnProceso) {
+                    event.preventDefault();
+                    return false;
+                }
+
                 if (event.key === "Enter" || event.keyCode === 13) {
                     event.preventDefault(); // Evita que se recargue la página o se envíe el formulario
                     iniciarSesion();
@@ -136,6 +190,10 @@
             });
 
             function iniciarSesion() {
+                if (loginEnProceso) {
+                    return;
+                }
+
                 var username = $('#typeUsernameX').val();
                 var password = $('#typePasswordX').val();
 
@@ -143,6 +201,8 @@
                     alert('Por favor, ingrese su usuario y contraseña.');
                     return;
                 }
+
+                establecerCargando(true);
 
                 $.ajax({
                     url: '/api/Auth/login',
@@ -154,8 +214,14 @@
                         window.location.href = "/Productos/ProductosAdmin"; // Redirigir después del login exitoso
                     },
                     error: function (error) {
+                        establecerCargando(false);
                         console.error('Error al iniciar sesión:', error);
                         alert('Credenciales incorrectas. Por favor, inténtelo de nuevo.');
+                    },
+                    complete: function () {
+                        if (window.location.pathname === '/Login/Login') {
+                            establecerCargando(false);
+                        }
                     }
                 });
             }

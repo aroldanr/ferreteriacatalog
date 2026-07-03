@@ -72,6 +72,47 @@ namespace ferreteria_catalog.Repositories
         }
 
 
+        public async Task<IEnumerable<ProductoDTO>> ObtenerProductosCatalogoAsync(string? termino, bool soloConExistencia)
+        {
+            var query =
+                from p in _context.Producto.AsNoTracking()
+                join m in _context.Marca.AsNoTracking() on p.MarcaId equals m.MarcaId into marcaJoin
+                from m in marcaJoin.DefaultIfEmpty()
+                join e in _context.Existencia.AsNoTracking() on p.ProductoId equals e.ProductoId into existenciaJoin
+                from e in existenciaJoin.DefaultIfEmpty()
+                select new { p, m, e };
+
+            if (!string.IsNullOrWhiteSpace(termino))
+            {
+                var terminoBusqueda = termino.Trim();
+                query = query.Where(x => x.p.Descripcion != null &&
+                    EF.Functions.Like(x.p.Descripcion, $"%{terminoBusqueda}%"));
+            }
+
+            if (soloConExistencia)
+            {
+                query = query.Where(x => x.e != null && x.e.Stock > 0);
+            }
+
+            return await query
+                .OrderBy(x => x.m != null ? x.m.NombreMarca : string.Empty)
+                .ThenBy(x => x.p.Descripcion)
+                .ThenBy(x => x.p.ProductoId)
+                .Select(x => new ProductoDTO
+                {
+                    ProductoId = x.p.ProductoId,
+                    Codigo = x.p.Codigo ?? "N/A",
+                    Descripcion = x.p.Descripcion ?? "Descripción no disponible",
+                    UndxBulto = x.p.UndxBulto ?? 0,
+                    Marca = x.m != null ? x.m.NombreMarca : "Sin Marca",
+                    ImagenURL = x.p.ImagenURL ?? string.Empty,
+                    Existencia = x.e != null ? x.e.Stock : 0,
+                    MarcaId = x.p.MarcaId
+                })
+                .ToListAsync();
+        }
+
+
         public async Task<IEnumerable<ProductoDTO>> GetAllProductosAsync()
         {
             var productos = await _context.Producto

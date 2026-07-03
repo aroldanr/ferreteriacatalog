@@ -17,5 +17,15 @@ namespace ferreteria_catalog.Services
         {
             return await _usuarioRepository.CrearUsuarioAsync(model);
         }
+
+        public async Task<List<UsuarioResumenDto>> ObtenerUsuariosAsync()
+        {
+            return await _usuarioRepository.ObtenerUsuariosAsync();
+        }
+
+        public async Task<Response<bool>> ResetearPasswordAsync(ResetPasswordDto model)
+        {
+            return await _usuarioRepository.ResetearPasswordAsync(model);
+        }
     }
 }

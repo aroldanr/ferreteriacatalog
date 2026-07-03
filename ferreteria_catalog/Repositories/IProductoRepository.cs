@@ -9,6 +9,7 @@ namespace ferreteria_catalog.Repositories
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorNombreAsync(string nombre);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorCodigoAsync(string codigo);
         Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoAsync(string termino);
+        Task<IEnumerable<ProductoDTO>> ObtenerProductosCatalogoAsync(string? termino, bool soloConExistencia);
         Task<IEnumerable<ProductoDTO>> GetAllProductosAsync();
         Task AddStockAsync(int id, int cantidad);
         Task<Response<IEnumerable<ProductoDTO>>> ObtenerProductosPaginadosAsync(int pagina, int cantidadPorPagina);

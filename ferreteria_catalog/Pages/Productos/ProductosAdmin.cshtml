@@ -57,6 +57,10 @@
 
 <h1>Productos</h1>
 
+<div id="catalogoPdfContainer" class="d-flex justify-content-end mb-3" style="display:none !important;">
+    <a href="/Productos/CatalogoPdf" class="btn btn-success">Catalogo PDF</a>
+</div>
+
 <form id="buscarForm" class="m-5">
     <div class="form-row m-5">
         <div class="input-group mb-1">
@@ -86,12 +90,40 @@
             var pagina = 1;
             var cantidadPorPagina = 10;
             var totalPaginas = 0;
+            var token = localStorage.getItem('token');
+
+            function obtenerRolDesdeToken(jwt) {
+                if (!jwt) {
+                    return null;
+                }
+
+                try {
+                    var partes = jwt.split('.');
+                    if (partes.length < 2) {
+                        return null;
+                    }
+
+                    var payload = JSON.parse(atob(partes[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    return payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+                        || payload.role
+                        || null;
+                } catch (error) {
+                    console.error('No se pudo leer el rol del token.', error);
+                    return null;
+                }
+            }
+
+            function actualizarVisibilidadCatalogo() {
+                var rol = obtenerRolDesdeToken(token);
+                if (rol === 'Admin') {
+                    $('#catalogoPdfContainer').removeAttr('style');
+                } else {
+                    $('#catalogoPdfContainer').attr('style', 'display:none !important;');
+                }
+            }
 
             function cargarProductos(termino) {
                 var url = termino ? '/api/Productos/buscar' : '/api/Productos/paginacion';
-
-                // Obtener el token desde el localStorage
-                var token = localStorage.getItem('token');
 
                 $.ajax({
                     url: url,
@@ -210,6 +242,7 @@
         });
 
             // Load initial set of products
+            actualizarVisibilidadCatalogo();
             cargarProductos("");
         });
     </script>

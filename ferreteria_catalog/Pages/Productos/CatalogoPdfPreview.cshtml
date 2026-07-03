@@ -1,0 +1,81 @@
+@page
+@model ferreteria_catalog.Pages.Productos.CatalogoPdfPreviewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Catalogo";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.TituloSucursal - Catalogo</title>
+    <link rel="stylesheet" href="~/bootstrap/css/bootstrap.css" />
+    <style>
+        .preview-actions {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1.25rem;
+            background: rgba(17, 24, 39, 0.94);
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+            backdrop-filter: blur(8px);
+        }
+
+        .preview-actions .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        @@media print {
+            .preview-actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-actions">
+        <div>
+            <strong>@Model.TituloSucursal</strong>
+            <span class="d-block text-white-50">Vista previa del catalogo</span>
+        </div>
+        <div class="actions">
+            <button type="button" class="btn btn-primary" onclick="window.print()">Guardar como PDF</button>
+            <button type="button" class="btn btn-outline-light" onclick="window.close()">Cerrar</button>
+        </div>
+    </div>
+@if (Model.EsChulin)
+{
+    await Html.RenderPartialAsync("_CatalogoPdfChulin", Model);
+}
+else if (Model.EsCardoza)
+{
+    await Html.RenderPartialAsync("_CatalogoPdfCardoza", Model);
+}
+else
+{
+    <div class="container py-5">
+        <div class="alert alert-warning">No se encontro una plantilla para la sucursal seleccionada.</div>
+    </div>
+}
+<script>
+    (function () {
+        var autoPrint = '@Model.AutoPrint'.toLowerCase() === 'true';
+        if (autoPrint) {
+            window.addEventListener('load', function () {
+                setTimeout(function () {
+                    window.print();
+                }, 500);
+            });
+        }
+    })();
+</script>
+</body>
+</html>

@@ -2,17 +2,16 @@ using ferreteria_catalog.Data;
 using ferreteria_catalog.Repositories;
 using ferreteria_catalog.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using System.Text;
-using Serilog.Events;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar Serilog para logging en archivos
+// Configure Serilog file logging.
 var logFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Logs", "log.txt");
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -21,7 +20,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Configurar logging
+// Configure logging providers.
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
@@ -30,8 +29,7 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 104857600; // 50 MB
 });
 
-
-// Configuración de Razor Pages con convenciones de rutas
+// Configure Razor Pages routes.
 builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AddPageRoute("/Productos/SubirImagen", "Productos/SubirImagen");
@@ -47,11 +45,10 @@ builder.Configuration
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Register repositories and services
+// Register repositories and services.
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 
@@ -64,14 +61,13 @@ builder.Services.AddScoped<IModuloService, ModuloService>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-// Add controllers and Razor Pages
+// Add controllers and Razor Pages.
 builder.Services.AddControllers();
 builder.Services.AddRazorPages();
 
-// Configuración de IHttpContextAccessor
 builder.Services.AddHttpContextAccessor();
 
-// Configuración de JWT
+// Configure JWT.
 var key = Encoding.ASCII.GetBytes(builder.Configuration["JwtSecretKey"]);
 builder.Services.AddAuthentication(options =>
 {
@@ -91,23 +87,21 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configura el servicio de autorización
+// Configure authorization policies.
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
     options.AddPolicy("Colab", policy => policy.RequireRole("Colab"));
 });
 
-// End Register repositories and services
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
-        builder =>
+        corsBuilder =>
         {
-            builder.AllowAnyOrigin()
-                   .AllowAnyMethod()
-                   .AllowAnyHeader();
+            corsBuilder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
         });
 });
 
@@ -115,7 +109,7 @@ var app = builder.Build();
 
 app.UseRouting();
 
-// Middleware para agregar el token JWT de las cookies a los encabezados de las solicitudes
+// Add the JWT token from the cookie into request headers when needed.
 app.Use(async (context, next) =>
 {
     var token = context.Request.Cookies["jwtToken"];
@@ -124,16 +118,15 @@ app.Use(async (context, next) =>
         if (!context.Request.Headers.ContainsKey("Authorization"))
         {
             context.Request.Headers.Add("Authorization", "Bearer " + token);
-            Console.WriteLine("Token añadido al encabezado: " + token); // Log para depuración
+            Console.WriteLine("Token added to request header: " + token);
         }
     }
+
     await next();
 });
 
-
 app.UseCors("AllowAllOrigins");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -147,13 +140,11 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/images"
 });
 
-// Para la carpeta bootstrap (o cualquier otra carpeta estática)
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/bootstrap")),
     RequestPath = "/bootstrap"
 });
-
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -161,7 +152,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllers();
 
-// Configurar la página de inicio
 app.MapGet("/", () => Results.Redirect("/Login/Login"));
 
 app.Run();

@@ -24,6 +24,11 @@ namespace ferreteria_catalog.Services
             return await _productoRepository.BuscarProductosPorCodigoAsync(codigo);
         }
 
+        public async Task<IEnumerable<ProductoDTO>> ObtenerProductosCatalogoAsync(string? termino, bool soloConExistencia)
+        {
+            return await _productoRepository.ObtenerProductosCatalogoAsync(termino, soloConExistencia);
+        }
+
         public async Task<IEnumerable<ProductoDTO>> BuscarProductosPorTerminoAsync(string termino)
         {
             var productosPorNombre = await _productoRepository.BuscarProductosPorNombreAsync(termino);

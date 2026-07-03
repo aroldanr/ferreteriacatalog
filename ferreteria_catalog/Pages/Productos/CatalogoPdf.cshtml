@@ -1,0 +1,96 @@
+@page
+@model ferreteria_catalog.Pages.Productos.CatalogoPdfModel
+@{
+    ViewData["Title"] = "Catalogo PDF";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .catalogo-shell {
+        max-width: 900px;
+        margin: 2rem auto;
+    }
+
+    .catalogo-card {
+        border: 0;
+        border-radius: 24px;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .catalogo-header {
+        background: linear-gradient(135deg, #0f5132, #1f8f50);
+        color: #fff;
+        padding: 2rem;
+    }
+
+    .catalogo-header h1 {
+        margin: 0 0 0.5rem;
+        font-size: 2rem;
+    }
+
+    .catalogo-body {
+        padding: 2rem;
+        background: #f8faf8;
+    }
+
+    .catalogo-actions {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .catalogo-note {
+        border-left: 4px solid #1f8f50;
+        background: #fff;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        color: #495057;
+    }
+</style>
+
+<div class="catalogo-shell">
+    <div class="card catalogo-card">
+        <div class="catalogo-header">
+            <h1>Catalogo PDF</h1>
+            <p class="mb-0">Seleccione sucursal y filtros para abrir la vista previa del catalogo.</p>
+        </div>
+        <div class="catalogo-body">
+            <form method="get" action="/Productos/CatalogoPdfPreview" target="_blank" class="row g-3">
+                <div class="col-md-6">
+                    <label for="sucursal" class="form-label">Sucursal</label>
+                    <select id="sucursal" name="sucursal" class="form-select" required>
+                        @foreach (var sucursal in Model.Sucursales)
+                        {
+                            <option value="@sucursal.Id">@sucursal.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="termino" class="form-label">Buscar por nombre</label>
+                    <input id="termino" name="termino" type="text" class="form-control" placeholder="Ejemplo: cerradura, tubo, martillo">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="soloConExistencia" class="form-label">Existencia</label>
+                    <select id="soloConExistencia" name="soloConExistencia" class="form-select">
+                        <option value="true">Solo productos con existencia</option>
+                        <option value="false">Todos los productos</option>
+                    </select>
+                </div>
+
+                <div class="col-12">
+                    <div class="catalogo-actions">
+                        <button type="submit" class="btn btn-success">Abrir vista previa</button>
+                        <a href="/Productos/ProductosAdmin" class="btn btn-outline-secondary">Volver a productos</a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="catalogo-note mt-4">
+                Desde la vista previa puede revisar el catalogo y usar <strong>Guardar como PDF</strong> si desea descargarlo.
+            </div>
+        </div>
+    </div>
+</div>

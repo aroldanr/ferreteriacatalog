@@ -29,6 +29,20 @@
 		<Content Include="Pages\**\*.cshtml" />
 		<!-- Incluye otros archivos necesarios -->
 		<Content Include="wwwroot\**\*" />
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Include="appsettings.Development.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Include="images\**\*">
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Include="images_pdf_catalog\**\*">
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -55,10 +69,6 @@
 
 	<ItemGroup>
 	  <UpToDateCheckInput Remove="Pages\Productos\ProductoDetalles.cshtml" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="images\folder.png" />
 	</ItemGroup>
 
 </Project>

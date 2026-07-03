@@ -6,5 +6,7 @@ namespace ferreteria_catalog.Repositories
     public interface IUsuarioRepository
     {
         Task<Response<bool>> CrearUsuarioAsync(CreateUserDto model);
+        Task<List<UsuarioResumenDto>> ObtenerUsuariosAsync();
+        Task<Response<bool>> ResetearPasswordAsync(ResetPasswordDto model);
     }
 }

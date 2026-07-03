@@ -1,0 +1,321 @@
+@model ferreteria_catalog.Pages.Productos.CatalogoPdfPreviewModel
+@{
+    var descripcionFiltro = string.IsNullOrWhiteSpace(Model.Termino) ? "Todos los nombres" : $"Coincidencias para \"{Model.Termino}\"";
+    var existenciaFiltro = Model.SoloConExistencia ? "Solo con existencia" : "Todos los productos";
+    var productosPorPagina = 9;
+    var gruposMarca = Model.Productos
+        .GroupBy(p => string.IsNullOrWhiteSpace(p.Marca) ? "Sin marca" : p.Marca)
+        .Select(grupo => new
+        {
+            Marca = grupo.Key,
+            Productos = grupo.ToList(),
+            Paginas = (int)Math.Ceiling(grupo.Count() / (double)productosPorPagina)
+        })
+        .ToList();
+    var totalPaginas = gruposMarca.Sum(x => x.Paginas);
+    var paginaActual = 0;
+}
+
+<style>
+    .catalog-preview {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #ece7df;
+        color: #201d1a;
+    }
+
+    .catalog-page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 18px auto;
+        padding: 16px 24px 92px;
+        background: #f8f4ee;
+        box-shadow: 0 18px 40px rgba(45, 35, 28, 0.18);
+        position: relative;
+        page-break-after: always;
+        overflow: hidden;
+    }
+
+    .catalog-page:last-of-type {
+        page-break-after: auto;
+    }
+
+    .page-header {
+        margin-bottom: 16px;
+        display: grid;
+        grid-template-columns: 0.92fr 1.38fr 0.94fr;
+        align-items: center;
+        min-height: 86px;
+        border-top: 8px solid #d35549;
+        column-gap: 8px;
+    }
+
+    .header-chip,
+    .header-right {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 14px;
+        background: #d35549;
+        color: #fff;
+        border-radius: 0 0 18px 18px;
+        font-weight: 800;
+        text-align: center;
+    }
+
+    .header-chip {
+        font-size: 1.24rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .header-title {
+        min-height: 56px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 8px 12px;
+        color: #2d231c;
+        text-transform: uppercase;
+        text-align: center;
+        line-height: 1.2;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+    }
+
+    .header-title .branch-name {
+        font-size: 0.88rem;
+    }
+
+    .header-title .brand-name {
+        font-size: 0.98rem;
+    }
+
+    .header-right {
+        font-size: 0.94rem;
+        line-height: 1.15;
+    }
+
+    .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .product-card {
+        min-height: 226px;
+        background: #fff;
+        border: 1px solid rgba(59, 37, 25, 0.12);
+        border-radius: 16px;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .product-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 126px;
+        padding: 12px;
+        background:
+            radial-gradient(circle at top left, rgba(200, 136, 75, 0.15), transparent 55%),
+            linear-gradient(180deg, #f7efe4, #ffffff);
+        border-bottom: 1px solid rgba(59, 37, 25, 0.08);
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .product-body {
+        padding: 12px;
+    }
+
+    .product-code {
+        display: inline-flex;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(200, 136, 75, 0.18);
+        color: #8a543d;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .product-title {
+        font-size: 0.83rem;
+        font-weight: 800;
+        line-height: 1.32;
+        min-height: 46px;
+        margin-bottom: 10px;
+        color: #2d231c;
+    }
+
+    .product-description {
+        font-size: 0.7rem;
+        line-height: 1.45;
+        color: #51483f;
+        margin-bottom: 10px;
+        min-height: 40px;
+    }
+
+    .product-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(59, 37, 25, 0.12);
+    }
+
+    .product-meta span {
+        display: block;
+        font-size: 0.6rem;
+        color: #7a726a;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 3px;
+    }
+
+    .product-meta strong {
+        font-size: 0.76rem;
+    }
+
+    .page-number {
+        position: absolute;
+        right: 24px;
+        bottom: 62px;
+        font-size: 0.72rem;
+        color: #7a726a;
+    }
+
+    .page-footer {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        bottom: 12px;
+    }
+
+    .page-footer img {
+        width: 100%;
+        display: block;
+    }
+
+    .empty-state {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px dashed rgba(59, 37, 25, 0.2);
+        padding: 48px 24px;
+        text-align: center;
+        color: #7a726a;
+    }
+
+    @@page {
+        size: A4;
+        margin: 0;
+    }
+
+    @@media print {
+        .catalog-preview {
+            background: #fff;
+        }
+
+        .screen-toolbar {
+            display: none;
+        }
+
+        .catalog-page {
+            margin: 0;
+            box-shadow: none;
+        }
+    }
+</style>
+
+<div class="catalog-preview">
+    @if (Model.Productos.Any())
+    {
+        foreach (var grupoMarca in gruposMarca)
+        {
+            for (var indiceGrupo = 0; indiceGrupo < grupoMarca.Paginas; indiceGrupo++)
+            {
+                paginaActual++;
+                var productosPagina = grupoMarca.Productos.Skip(indiceGrupo * productosPorPagina).Take(productosPorPagina).ToList();
+                <section class="catalog-page">
+                    <div class="page-header">
+                        <div class="header-chip">Durman</div>
+                        <div class="header-title">
+                            <div class="branch-name">Ferreteria Ruiz Cardoza</div>
+                            <div class="brand-name">@grupoMarca.Marca</div>
+                        </div>
+                        <div class="header-right">Accesorios y Mas</div>
+                    </div>
+
+                    <section class="catalog-grid">
+                        @foreach (var producto in productosPagina)
+                        {
+                            <article class="product-card">
+                                <div class="product-image">
+                                    <img src="/images/@(producto.Codigo).jpg"
+                                         alt="@producto.Descripcion"
+                                         onerror="this.onerror=null;this.src='/images/folder.png';" />
+                                </div>
+                                <div class="product-body">
+                                    <div class="product-code">@producto.Codigo</div>
+                                    <div class="product-title">@producto.Descripcion</div>
+                                    <div class="product-description">
+                                        Catalogo ordenado por marca para impresion y consulta comercial.
+                                    </div>
+                                    <div class="product-meta">
+                                        <div>
+                                            <span>Marca</span>
+                                            <strong>@producto.Marca</strong>
+                                        </div>
+                                        <div>
+                                            <span>Existencia</span>
+                                            <strong>@producto.Existencia</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </section>
+
+                    <div class="page-number">Pagina @paginaActual de @totalPaginas</div>
+
+                    <div class="page-footer">
+                        <img src="@Model.PieSrc" alt="Pie de pagina @Model.TituloSucursal" />
+                    </div>
+                </section>
+            }
+        }
+    }
+    else
+    {
+        <section class="catalog-page">
+            <div class="page-header">
+                <div class="header-chip">Durman</div>
+                <div class="header-title">
+                    <div class="branch-name">Ferreteria Ruiz Cardoza</div>
+                    <div class="brand-name">Sin resultados</div>
+                </div>
+                <div class="header-right">Accesorios y Mas</div>
+            </div>
+
+            <section class="empty-state">
+                <h2 class="h4 mb-3">No hay productos para este filtro</h2>
+                <p class="mb-0">Ajuste el nombre o la opcion de existencia para generar el catalogo.</p>
+            </section>
+
+            <div class="page-number">Pagina 1 de 1</div>
+
+            <div class="page-footer">
+                <img src="@Model.PieSrc" alt="Pie de pagina @Model.TituloSucursal" />
+            </div>
+        </section>
+    }
+</div>

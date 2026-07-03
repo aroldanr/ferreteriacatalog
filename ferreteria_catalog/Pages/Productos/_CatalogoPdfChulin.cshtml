@@ -1,0 +1,302 @@
+@model ferreteria_catalog.Pages.Productos.CatalogoPdfPreviewModel
+@{
+    var descripcionFiltro = string.IsNullOrWhiteSpace(Model.Termino) ? "Todos los nombres" : $"Coincidencias para \"{Model.Termino}\"";
+    var existenciaFiltro = Model.SoloConExistencia ? "Solo con existencia" : "Todos los productos";
+    var productosPorPagina = 9;
+    var gruposMarca = Model.Productos
+        .GroupBy(p => string.IsNullOrWhiteSpace(p.Marca) ? "Sin marca" : p.Marca)
+        .Select(grupo => new
+        {
+            Marca = grupo.Key,
+            Productos = grupo.ToList(),
+            Paginas = (int)Math.Ceiling(grupo.Count() / (double)productosPorPagina)
+        })
+        .ToList();
+    var totalPaginas = gruposMarca.Sum(x => x.Paginas);
+    var paginaActual = 0;
+}
+
+<style>
+    .catalog-preview {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: #dfe6de;
+        color: #1d2329;
+    }
+
+    .catalog-page {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 18px auto;
+        padding: 16px 24px 94px;
+        background: #f4f1ea;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+        position: relative;
+        page-break-after: always;
+        overflow: hidden;
+    }
+
+    .catalog-page:last-of-type {
+        page-break-after: auto;
+    }
+
+    .page-header {
+        margin-bottom: 16px;
+        background: linear-gradient(90deg, #f5f5f5 0%, #ffffff 31%, #ffffff 67%, #25ad47 67%, #25ad47 100%);
+        border-radius: 0 0 16px 16px;
+        min-height: 86px;
+        display: grid;
+        grid-template-columns: 1.4fr 1.1fr 0.9fr;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .header-branch {
+        padding: 12px 16px 12px 18px;
+        font-size: 1.92rem;
+        font-weight: 900;
+        letter-spacing: 0.15em;
+        color: #d8dcdf;
+        text-shadow: 1px 1px 0 #707980;
+        text-transform: uppercase;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .header-brand {
+        padding: 10px 14px;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1d2329;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        line-height: 1.2;
+    }
+
+    .header-spacer {
+        min-height: 100%;
+    }
+
+    .header-right {
+        min-height: 100%;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.92rem;
+        font-weight: 800;
+        line-height: 1.1;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        overflow-wrap: anywhere;
+    }
+
+    .catalog-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .product-card {
+        background: #fff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 14px;
+        overflow: hidden;
+        break-inside: avoid;
+        page-break-inside: avoid;
+        min-height: 214px;
+    }
+
+    .product-image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 122px;
+        padding: 10px;
+        background:
+            linear-gradient(135deg, rgba(31, 143, 80, 0.09), rgba(255, 255, 255, 0.95)),
+            linear-gradient(45deg, rgba(15, 90, 49, 0.05), transparent 60%);
+        border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .product-body {
+        padding: 12px;
+    }
+
+    .product-code {
+        display: inline-flex;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(31, 143, 80, 0.12);
+        color: #0e5a31;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .product-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        line-height: 1.35;
+        min-height: 48px;
+        margin-bottom: 10px;
+    }
+
+    .product-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .product-meta div {
+        border-top: 1px solid #d9d9d9;
+        padding-top: 8px;
+    }
+
+    .product-meta span {
+        display: block;
+        font-size: 0.62rem;
+        color: #667085;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 3px;
+    }
+
+    .product-meta strong {
+        font-size: 0.78rem;
+    }
+
+    .page-number {
+        position: absolute;
+        right: 24px;
+        bottom: 64px;
+        font-size: 0.72rem;
+        color: #667085;
+    }
+
+    .page-footer {
+        position: absolute;
+        left: 24px;
+        right: 24px;
+        bottom: 12px;
+    }
+
+    .page-footer img {
+        width: 100%;
+        display: block;
+    }
+
+    .empty-state {
+        background: #fff;
+        border-radius: 18px;
+        border: 1px dashed rgba(15, 23, 42, 0.2);
+        padding: 48px 24px;
+        text-align: center;
+        color: #667085;
+    }
+
+    @@page {
+        size: A4;
+        margin: 0;
+    }
+
+    @@media print {
+        .catalog-preview {
+            background: #fff;
+        }
+
+        .screen-toolbar {
+            display: none;
+        }
+
+        .catalog-page {
+            margin: 0;
+            box-shadow: none;
+        }
+    }
+</style>
+
+<div class="catalog-preview">
+    @if (Model.Productos.Any())
+    {
+        foreach (var grupoMarca in gruposMarca)
+        {
+            for (var indiceGrupo = 0; indiceGrupo < grupoMarca.Paginas; indiceGrupo++)
+            {
+                paginaActual++;
+                var productosPagina = grupoMarca.Productos.Skip(indiceGrupo * productosPorPagina).Take(productosPorPagina).ToList();
+                <section class="catalog-page">
+                    <div class="page-header">
+                        <div class="header-branch">Ferreteria Chulin</div>
+                        <div class="header-spacer"></div>
+                        <div class="header-right">@grupoMarca.Marca</div>
+                    </div>
+
+                    <section class="catalog-grid">
+                        @foreach (var producto in productosPagina)
+                        {
+                            <article class="product-card">
+                                <div class="product-image">
+                                    <img src="/images/@(producto.Codigo).jpg"
+                                         alt="@producto.Descripcion"
+                                         onerror="this.onerror=null;this.src='/images/folder.png';" />
+                                </div>
+                                <div class="product-body">
+                                    <div class="product-code">@producto.Codigo</div>
+                                    <div class="product-title">@producto.Descripcion</div>
+                                    <div class="product-meta">
+                                        <div>
+                                            <span>Marca</span>
+                                            <strong>@producto.Marca</strong>
+                                        </div>
+                                        <div>
+                                            <span>Existencia</span>
+                                            <strong>@producto.Existencia</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </section>
+
+                    <div class="page-number">Pagina @paginaActual de @totalPaginas</div>
+
+                    <div class="page-footer">
+                        <img src="@Model.PieSrc" alt="Pie de pagina @Model.TituloSucursal" />
+                    </div>
+                </section>
+            }
+        }
+    }
+    else
+    {
+        <section class="catalog-page">
+            <div class="page-header">
+                <div class="header-branch">Ferreteria Chulin</div>
+                <div class="header-brand">Sin resultados</div>
+                <div class="header-right">Catalogo por Marca</div>
+            </div>
+
+            <section class="empty-state">
+                <h2 class="h4 mb-3">No hay productos para este filtro</h2>
+                <p class="mb-0">Ajuste el nombre o la opcion de existencia para generar el catalogo.</p>
+            </section>
+
+            <div class="page-number">Pagina 1 de 1</div>
+
+            <div class="page-footer">
+                <img src="@Model.PieSrc" alt="Pie de pagina @Model.TituloSucursal" />
+            </div>
+        </section>
+    }
+</div>

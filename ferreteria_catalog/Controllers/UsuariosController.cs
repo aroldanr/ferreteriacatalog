@@ -38,5 +38,42 @@ namespace ferreteria_catalog.Controllers
             return BadRequest(new { success = false, message = "Datos inválidos. Por favor, verifique la información proporcionada." });
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("Listar")]
+        public async Task<IActionResult> Listar()
+        {
+            var usuarios = await _usuarioService.ObtenerUsuariosAsync();
+            return Ok(usuarios);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto model)
+        {
+            if (model.UsuarioId <= 0)
+            {
+                return BadRequest(new { success = false, message = "Debe seleccionar un usuario." });
+            }
+
+            if (string.IsNullOrWhiteSpace(model.NuevaPassword))
+            {
+                return BadRequest(new { success = false, message = "La nueva contraseña es obligatoria." });
+            }
+
+            if (model.NuevaPassword.Length < 6)
+            {
+                return BadRequest(new { success = false, message = "La nueva contraseña debe tener al menos 6 caracteres." });
+            }
+
+            var response = await _usuarioService.ResetearPasswordAsync(model);
+
+            if (response.IsSuccess)
+            {
+                return Ok(new { success = true, message = response.Message });
+            }
+
+            return BadRequest(new { success = false, message = response.Message });
+        }
+
     }
 }
